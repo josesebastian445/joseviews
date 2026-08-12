@@ -1,0 +1,195 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/motion/Hero.astro';
+import Section from '../components/Section.astro';
+import Marquee from '../components/Marquee.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import WorkCard from '../components/WorkCard.astro';
+import PostCard from '../components/PostCard.astro';
+import Testimonials from '../components/Testimonials.astro';
+import { SITE, CONTACT } from '../consts';
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+
+const work = (await getCollection('work', ({ data }) => !data.draft))
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 2);
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft || import.meta.env.DEV))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+
+const PROCESS = [
+  {
+    step: 'Conversation',
+    body: 'A call or a WhatsApp thread. You describe the problem, I ask the awkward questions about budget and deadlines early rather than late.',
+  },
+  {
+    step: 'Proposal',
+    body: 'A written scope with a fixed price or a clear rate, a timeline, and what is explicitly not included. No surprises on the invoice.',
+  },
+  {
+    step: 'Build',
+    body: 'Work happens in the open. You get a staging link from day one and can watch it come together instead of waiting for a reveal.',
+  },
+  {
+    step: 'Handover',
+    body: 'Documentation, a training session, and every credential transferred to you. You own everything, including the ability to leave.',
+  },
+];
+
+// ProfessionalService makes the homepage eligible for service-related rich
+// results and reinforces the local (Dubai) signal.
+const schema = [
+  {
+    '@type': 'ProfessionalService',
+    '@id': `${SITE.url}/#service`,
+    name: `${SITE.name} — Web Development & SEO`,
+    url: SITE.url,
+    description: SITE.description,
+    provider: { '@id': `${SITE.url}/#person` },
+    areaServed: [
+      { '@type': 'City', name: 'Dubai' },
+      { '@type': 'Country', name: 'United Arab Emirates' },
+    ],
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: SITE.city,
+      addressRegion: SITE.region,
+      addressCountry: SITE.country,
+    },
+    telephone: CONTACT.phone,
+    email: CONTACT.email,
+    priceRange: 'AED',
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'Services',
+      itemListElement: services.map((s) => ({
+        '@type': 'Offer',
+        itemOffered: { '@type': 'Service', name: s.data.title, description: s.data.tagline },
+      })),
+    },
+  },
+];
+---
+
+<BaseLayout
+  title={SITE.title}
+  description={SITE.description}
+  schema={schema}
+  padTop={true}
+>
+  <Hero />
+
+  <Marquee />
+
+  <!-- ================= Services ================= -->
+  <Section
+    id="services"
+    eyebrow="// 01 — What I do"
+    title="Four things, done properly"
+    intro="I would rather be genuinely good at a short list than passable at everything. If your project needs something outside this, I will tell you and point you at someone better."
+    action={{ label: 'All services', href: '/services' }}
+  >
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {services.map((service, i) => <ServiceCard service={service} index={i} />)}
+    </div>
+  </Section>
+
+  <!-- ================= Work ================= -->
+  {
+    work.length > 0 && (
+      <Section
+        eyebrow="// 02 — Selected work"
+        title="Things I've built and kept running"
+        intro="Long engagements rather than one-off builds — which means these are systems I still maintain, not screenshots from a portfolio."
+        action={{ label: 'All case studies', href: '/work' }}
+      >
+        <div class="grid gap-5 md:grid-cols-2">
+          {work.map((entry, i) => (
+            <WorkCard entry={entry} index={i} />
+          ))}
+        </div>
+      </Section>
+    )
+  }
+
+  <!-- ================= Process ================= -->
+  <Section
+    eyebrow="// 03 — How it works"
+    title="No mystery, no lock-in"
+    intro="The most common complaint I hear about previous developers is not the price. It is not knowing what was happening, and not being able to leave afterwards."
+  >
+    <ol class="grid gap-px overflow-hidden rounded-xl border border-line bg-line md:grid-cols-2 lg:grid-cols-4">
+      {
+        PROCESS.map((item, i) => (
+          <li
+            class="group relative bg-bg p-7 transition-colors duration-300 hover:bg-surface/60"
+            data-reveal
+            style={`--reveal-delay:${i * 90}ms`}
+          >
+            <span class="font-mono text-xs text-accent">0{i + 1}</span>
+            <h3 class="mt-3 text-xl">{item.step}</h3>
+            <p class="mt-2.5 text-[0.92rem] leading-relaxed text-muted">{item.body}</p>
+            <span
+              class="absolute bottom-0 left-0 h-px w-0 bg-accent transition-all duration-500 group-hover:w-full"
+              aria-hidden="true"
+            />
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  <!-- ================= About teaser ================= -->
+  <Section eyebrow="// 04 — Who you'd be working with">
+    <div class="grid gap-12 lg:grid-cols-[1fr_1fr] lg:gap-20">
+      <div data-reveal>
+        <h2 class="text-[clamp(2rem,5vw,3.25rem)]">
+          Seven years of<br />
+          <span class="text-accent">the whole stack</span> — not<br />
+          just the pretty part.
+        </h2>
+      </div>
+
+      <div class="space-y-5 text-[1.05rem] leading-relaxed text-muted" data-reveal style="--reveal-delay:120ms">
+        <p>
+          I started in banking IT, supporting core banking software where a bad
+          deployment was not a design problem but a customer standing at a counter.
+          That shaped how I work more than anything since.
+        </p>
+        <p>
+          Since then I've moved through SEO, web development and IT management —
+          which means I'm one of relatively few people who can build the site,
+          configure the firewall in front of it, and explain why it isn't ranking.
+        </p>
+        <p class="text-ink">
+          You get one person accountable for the whole thing, rather than three
+          vendors pointing at each other.
+        </p>
+        <a href="/about" class="btn btn-ghost mt-2 inline-flex">More about me</a>
+      </div>
+    </div>
+  </Section>
+
+  <Testimonials />
+
+  <!-- ================= Blog ================= -->
+  {
+    posts.length > 0 && (
+      <Section
+        eyebrow="// 05 — Writing"
+        title="Notes from the work"
+        intro="A new post most weeks — usually something I had to figure out for a client that week, written down so the next person does not have to."
+        action={{ label: 'All posts', href: '/blog' }}
+      >
+        <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post, i) => (
+            <PostCard post={post} index={i} />
+          ))}
+        </div>
+      </Section>
+    )
+  }
+</BaseLayout>

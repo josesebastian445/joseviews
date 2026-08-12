@@ -1,0 +1,55 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostGrid from '../../../components/PostGrid.astro';
+import { getPublishedPosts, paginateSlice, totalPages } from '../../../lib/posts';
+
+// Page 1 lives at /blog, so this route starts at 2 and produces nothing when
+// there is only a single page of posts.
+export const getStaticPaths = (async () => {
+  const all = await getPublishedPosts();
+  const pages = totalPages(all.length);
+  return Array.from({ length: Math.max(0, pages - 1) }, (_, i) => ({
+    params: { page: String(i + 2) },
+  }));
+}) satisfies GetStaticPaths;
+
+const pageNumber = Number(Astro.params.page);
+const all = await getPublishedPosts();
+const posts = paginateSlice(all, pageNumber);
+const pages = totalPages(all.length);
+
+const prevUrl = pageNumber === 2 ? '/blog' : `/blog/page/${pageNumber - 1}`;
+const nextUrl = pageNumber < pages ? `/blog/page/${pageNumber + 1}` : null;
+---
+
+<BaseLayout
+  title={`Blog — page ${pageNumber}`}
+  description={`Page ${pageNumber} of writing on web development, SEO and IT infrastructure by Jose Sebastian.`}
+>
+  <header class="container-page pt-16 md:pt-24">
+    <p class="eyebrow mb-5">// Writing · page {pageNumber}</p>
+    <h1 class="text-[clamp(2.2rem,6vw,3.5rem)]">Older posts</h1>
+  </header>
+
+  <div class="container-page section">
+    <PostGrid posts={posts} />
+
+    <nav
+      class="mt-16 flex items-center justify-between border-t border-line pt-8 font-mono text-sm"
+      aria-label="Pagination"
+    >
+      <a href={prevUrl} class="text-muted transition-colors hover:text-accent">← Newer</a>
+      <span class="text-faint">{pageNumber} / {pages}</span>
+      {
+        nextUrl ? (
+          <a href={nextUrl} class="text-muted transition-colors hover:text-accent">
+            Older →
+          </a>
+        ) : (
+          <span class="text-faint/40">Older →</span>
+        )
+      }
+    </nav>
+  </div>
+</BaseLayout>

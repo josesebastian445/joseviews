@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPublishedPosts } from '../lib/posts';
+import { NAV } from '../consts';
+
+// A 404 that offers somewhere to go recovers a visitor; one that just says
+// "not found" loses them.
+const recent = (await getPublishedPosts()).slice(0, 3);
+---
+
+<BaseLayout
+  title="Page not found"
+  description="That page doesn't exist — but these might be what you were looking for."
+  noindex={true}
+>
+  <div class="container-page flex min-h-[70vh] items-center py-20">
+    <div class="w-full">
+      <p class="font-mono text-sm text-accent" data-reveal>
+        <span class="text-faint">HTTP</span> 404
+      </p>
+
+      <h1 class="mt-5 text-[clamp(3rem,11vw,7rem)] leading-[0.92]" data-reveal>
+        This page<br /><span class="text-accent">doesn't exist.</span>
+      </h1>
+
+      <p class="mt-7 max-w-lg text-lg text-muted" data-reveal style="--reveal-delay:100ms">
+        Either the link was wrong, or I moved something and didn't set up a redirect.
+        If it's the second one, that's my fault — do tell me.
+      </p>
+
+      <nav class="mt-10 flex flex-wrap gap-2" aria-label="Site sections" data-reveal style="--reveal-delay:160ms">
+        <a href="/" class="btn btn-primary !px-6 !py-3">Back to home</a>
+        {NAV.map((item) => <a href={item.href} class="btn btn-ghost !px-5 !py-3">{item.label}</a>)}
+      </nav>
+
+      {
+        recent.length > 0 && (
+          <div class="mt-16 border-t border-line pt-10" data-reveal style="--reveal-delay:220ms">
+            <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-faint">
+              Or read something recent
+            </p>
+            <ul class="mt-5 space-y-3">
+              {recent.map((post) => (
+                <li>
+                  <a
+                    href={`/blog/${post.id}`}
+                    class="group inline-flex items-baseline gap-3 text-lg transition-colors hover:text-accent"
+                  >
+                    <span class="font-mono text-xs text-accent">→</span>
+                    {post.data.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</BaseLayout>

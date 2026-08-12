@@ -1,0 +1,64 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WorkCard from '../../components/WorkCard.astro';
+import { SITE } from '../../consts';
+
+const entries = (await getCollection('work', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+const schema = [
+  {
+    '@type': 'CollectionPage',
+    name: 'Selected work',
+    url: `${SITE.url}/work`,
+    description: 'Case studies from seven years of building and maintaining business websites.',
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.url },
+      { '@type': 'ListItem', position: 2, name: 'Work', item: `${SITE.url}/work` },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="Selected work"
+  description="Case studies from seven years of building and maintaining business websites in Dubai — WordPress, Next.js, Astro, WooCommerce, hosting and SEO."
+  image="/og/page/work.png"
+  schema={schema}
+>
+  <header class="container-page pt-16 md:pt-24">
+    <div class="max-w-3xl">
+      <p class="eyebrow mb-5" data-reveal>// Selected work</p>
+      <h1 class="text-[clamp(2.5rem,7vw,4.5rem)]" data-reveal>
+        Long engagements,<br /><span class="text-accent">not screenshots.</span>
+      </h1>
+      <p class="mt-6 text-lg leading-relaxed text-muted" data-reveal style="--reveal-delay:100ms">
+        Most of my work has been multi-year: building something, then keeping it
+        alive. That is a different discipline from launching and leaving, and it is
+        what these case studies describe.
+      </p>
+    </div>
+  </header>
+
+  <div class="container-page section">
+    <div class="grid gap-5 md:grid-cols-2">
+      {entries.map((entry, i) => <WorkCard entry={entry} index={i} featured={i === 0} />)}
+    </div>
+
+    <div class="card mt-16 p-8 text-center md:p-12" data-reveal>
+      <h2 class="text-3xl">Your project could be next</h2>
+      <p class="mx-auto mt-4 max-w-lg text-muted">
+        Whether it's a new build, a rescue job on something that's broken, or an
+        SEO problem nobody has been able to diagnose — send it over.
+      </p>
+      <a href="/contact" class="btn btn-primary mt-7 !px-7 !py-3.5" data-magnetic="0.25">
+        Start a conversation
+      </a>
+    </div>
+  </div>
+</BaseLayout>

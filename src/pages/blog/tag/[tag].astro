@@ -1,0 +1,91 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostGrid from '../../../components/PostGrid.astro';
+import { getPublishedPosts, getTagCounts, tagSlug } from '../../../lib/posts';
+import { SITE } from '../../../consts';
+
+export const getStaticPaths = (async () => {
+  const posts = await getPublishedPosts();
+  const tags = new Map<string, string>();
+  for (const post of posts) {
+    for (const tag of post.data.tags) tags.set(tagSlug(tag), tag);
+  }
+  return [...tags.entries()].map(([slug, label]) => ({
+    params: { tag: slug },
+    props: { label },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  label: string;
+}
+
+const { label } = Astro.props;
+const { tag } = Astro.params;
+
+const posts = (await getPublishedPosts()).filter((p) =>
+  p.data.tags.some((t) => tagSlug(t) === tag)
+);
+const allTags = await getTagCounts();
+
+const schema = [
+  {
+    '@type': 'CollectionPage',
+    name: `${label} — articles`,
+    url: `${SITE.url}/blog/tag/${tag}`,
+    isPartOf: { '@id': `${SITE.url}/blog#blog` },
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.url },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE.url}/blog` },
+      { '@type': 'ListItem', position: 3, name: label, item: `${SITE.url}/blog/tag/${tag}` },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title={`${label} articles`}
+  description={`Everything I've written about ${label} — practical notes from client work in Dubai.`}
+  schema={schema}
+>
+  <header class="container-page pt-16 md:pt-24">
+    <nav aria-label="Breadcrumb" class="mb-8">
+      <ol class="flex items-center gap-2 font-mono text-xs text-faint">
+        <li><a href="/" class="transition-colors hover:text-accent">Home</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="/blog" class="transition-colors hover:text-accent">Blog</a></li>
+      </ol>
+    </nav>
+
+    <p class="eyebrow mb-5">// Tag</p>
+    <h1 class="text-[clamp(2.2rem,6vw,3.75rem)]">
+      <span class="text-accent">#</span>{label}
+    </h1>
+    <p class="mt-5 text-muted">
+      {posts.length} post{posts.length === 1 ? '' : 's'} on {label}.
+    </p>
+
+    <ul class="mt-9 flex flex-wrap gap-2">
+      <li><a href="/blog" class="tag">← All posts</a></li>
+      {
+        allTags
+          .filter(([t]) => tagSlug(t) !== tag)
+          .map(([t]) => (
+            <li>
+              <a href={`/blog/tag/${tagSlug(t)}`} class="tag">
+                {t}
+              </a>
+            </li>
+          ))
+      }
+    </ul>
+  </header>
+
+  <div class="container-page section">
+    <PostGrid posts={posts} />
+  </div>
+</BaseLayout>

@@ -1,0 +1,23 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import PostCard from './PostCard.astro';
+
+interface Props {
+  posts: CollectionEntry<'blog'>[];
+  emptyMessage?: string;
+}
+
+const { posts, emptyMessage = 'No posts here yet.' } = Astro.props;
+---
+
+{
+  posts.length === 0 ? (
+    <p class="text-muted">{emptyMessage}</p>
+  ) : (
+    <div class="grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+      {posts.map((post, i) => (
+        <PostCard post={post} index={i} />
+      ))}
+    </div>
+  )
+}

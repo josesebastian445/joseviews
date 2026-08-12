@@ -1,0 +1,198 @@
+# Sveltia CMS configuration
+#
+# Every field here must stay in sync with the Zod schemas in
+# src/content.config.ts. If they drift, the CMS will happily write a file that
+# then fails the production build — so change both together.
+#
+# SETUP (one time):
+#   1. Deploy the OAuth worker: https://github.com/sveltia/sveltia-cms-auth
+#   2. Create a GitHub OAuth app whose callback points at that worker
+#   3. Put the worker URL in `base_url` below
+#   See DEPLOYMENT.md for the full walkthrough.
+
+backend:
+  name: github
+  repo: josesebastian445/josesebastian-site # CHANGE: your-username/your-repo
+  branch: main
+  # CHANGE: your deployed sveltia-cms-auth worker URL.
+  # Remove this line entirely to fall back to personal-access-token login.
+  base_url: https://sveltia-cms-auth.YOUR-SUBDOMAIN.workers.dev
+  commit_messages:
+    create: 'content: add {{collection}} "{{slug}}"'
+    update: 'content: update {{collection}} "{{slug}}"'
+    delete: 'content: delete {{collection}} "{{slug}}"'
+    uploadMedia: 'content: upload {{path}}'
+    deleteMedia: 'content: delete {{path}}'
+
+# Local development: run `npx sveltia-cms-proxy-server` and open
+# http://localhost:4321/admin to edit files on disk without touching GitHub.
+local_backend: true
+
+# Uploads land in src/assets so Astro's image pipeline optimises them.
+media_folder: src/assets/uploads
+public_folder: /src/assets/uploads
+
+publish_mode: simple
+site_url: https://josesebastian.com # CHANGE to your domain
+display_url: https://josesebastian.com # CHANGE to your domain
+logo_url: /icon-512.png
+
+collections:
+  # ---------------------------------------------------------------- blog ----
+  - name: blog
+    label: Blog posts
+    label_singular: Blog post
+    description: >-
+      Your weekly writing. Aim for one useful thing you learned that week.
+      Anything marked as a draft stays out of the live site.
+    folder: src/content/blog
+    create: true
+    slug: '{{slug}}'
+    path: '{{slug}}'
+    extension: md
+    format: yaml-frontmatter
+    preview_path: blog/{{slug}}
+    sortable_fields: [pubDate, title]
+    view_filters:
+      - label: Drafts
+        field: draft
+        pattern: true
+      - label: Published
+        field: draft
+        pattern: false
+    fields:
+      - {
+          name: title,
+          label: Title,
+          widget: string,
+          hint: 'Under 80 characters. Lead with the thing people search for.',
+        }
+      - {
+          name: description,
+          label: Meta description,
+          widget: text,
+          hint: 'Between 50 and 180 characters. This is what shows in Google results and on social cards.',
+          pattern: ['^.{50,180}$', 'Must be between 50 and 180 characters'],
+        }
+      - { name: pubDate, label: Publish date, widget: datetime, format: 'YYYY-MM-DD', time_format: false, picker_utc: true }
+      - {
+          name: updatedDate,
+          label: Last updated,
+          widget: datetime,
+          format: 'YYYY-MM-DD',
+          time_format: false,
+          picker_utc: true,
+          required: false,
+          hint: 'Only set this if you meaningfully revise a published post.',
+        }
+      - { name: heroImage, label: Hero image, widget: image, required: false, choose_url: false }
+      - {
+          name: heroAlt,
+          label: Hero image alt text,
+          widget: string,
+          required: false,
+          hint: 'Describe the image for screen readers. Not a place for keywords.',
+        }
+      - {
+          name: tags,
+          label: Tags,
+          widget: list,
+          default: [],
+          hint: 'Two or three. Reuse existing tags rather than inventing new ones — each tag becomes a page.',
+        }
+      - { name: draft, label: Draft, widget: boolean, default: true, hint: 'Turn this off to publish.' }
+      - {
+          name: featured,
+          label: Featured,
+          widget: boolean,
+          default: false,
+          required: false,
+        }
+      - { name: body, label: Post, widget: markdown }
+
+  # ---------------------------------------------------------------- work ----
+  - name: work
+    label: Case studies
+    label_singular: Case study
+    description: 'Client work. Only publish metrics you can evidence.'
+    folder: src/content/work
+    create: true
+    slug: '{{slug}}'
+    path: '{{slug}}'
+    extension: md
+    format: yaml-frontmatter
+    preview_path: work/{{slug}}
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: client, label: Client, widget: string }
+      - {
+          name: summary,
+          label: Summary,
+          widget: text,
+          hint: 'Max 220 characters — shown on the cards.',
+          pattern: ['^.{1,220}$', 'Must be 220 characters or fewer'],
+        }
+      - { name: cover, label: Cover image, widget: image, required: false, choose_url: false }
+      - { name: coverAlt, label: Cover alt text, widget: string, required: false }
+      - { name: year, label: Period, widget: string, hint: 'e.g. 2022–present' }
+      - { name: services, label: Services, widget: list, default: [] }
+      - { name: stack, label: Stack, widget: list, default: [] }
+      - name: metrics
+        label: Headline metrics
+        widget: list
+        required: false
+        max: 4
+        summary: '{{fields.label}}: {{fields.value}}'
+        hint: 'Anything left as TODO is hidden from visitors. Only publish numbers you can evidence.'
+        fields:
+          - { name: label, label: Label, widget: string }
+          - { name: value, label: Value, widget: string }
+      - { name: url, label: Live URL, widget: string, required: false }
+      - { name: order, label: Sort order, widget: number, default: 99, value_type: int }
+      - { name: featured, label: Featured, widget: boolean, default: false }
+      - { name: draft, label: Draft, widget: boolean, default: false }
+      - { name: body, label: Case study, widget: markdown }
+
+  # ------------------------------------------------------------ services ----
+  - name: services
+    label: Services
+    label_singular: Service
+    folder: src/content/services
+    create: true
+    slug: '{{slug}}'
+    path: '{{slug}}'
+    extension: md
+    format: yaml-frontmatter
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: tagline, label: Tagline, widget: string }
+      - {
+          name: icon,
+          label: Icon,
+          widget: select,
+          options: [code, search, shield, server],
+        }
+      - { name: bullets, label: What's involved, widget: list, min: 2, max: 6 }
+      - { name: deliverables, label: What they get, widget: list, default: [] }
+      - { name: startingPrice, label: Starting price, widget: string, required: false }
+      - { name: timeline, label: Typical timeline, widget: string, required: false }
+      - { name: order, label: Sort order, widget: number, default: 99, value_type: int }
+      - { name: body, label: Description, widget: markdown }
+
+  # -------------------------------------------------------- testimonials ----
+  - name: testimonials
+    label: Testimonials
+    label_singular: Testimonial
+    description: 'Real quotes only. The homepage section stays hidden until at least one exists.'
+    folder: src/content/testimonials
+    create: true
+    slug: '{{slug}}'
+    path: '{{slug}}'
+    extension: md
+    format: yaml-frontmatter
+    fields:
+      - { name: quote, label: Quote, widget: text }
+      - { name: name, label: Name, widget: string }
+      - { name: role, label: Role, widget: string }
+      - { name: company, label: Company, widget: string, required: false }
+      - { name: order, label: Sort order, widget: number, default: 99, value_type: int }

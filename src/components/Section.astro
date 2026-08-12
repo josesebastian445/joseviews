@@ -1,0 +1,53 @@
+---
+interface Props {
+  eyebrow?: string;
+  title?: string;
+  intro?: string;
+  id?: string;
+  /** Right-aligned link in the section header, e.g. "All work →". */
+  action?: { label: string; href: string };
+  class?: string;
+}
+
+const { eyebrow, title, intro, id, action, class: className } = Astro.props;
+---
+
+<section id={id} class:list={['section', className]}>
+  <div class="container-page">
+    {
+      (eyebrow || title) && (
+        <div class="mb-12 flex flex-wrap items-end justify-between gap-6 md:mb-16">
+          <div class="max-w-2xl" data-reveal>
+            {eyebrow && <p class="eyebrow mb-5">{eyebrow}</p>}
+            {title && <h2 class="text-[clamp(2rem,5vw,3.25rem)]" set:html={title} />}
+            {intro && <p class="mt-5 text-[1.05rem] leading-relaxed text-muted">{intro}</p>}
+          </div>
+
+          {action && (
+            <a
+              href={action.href}
+              class="group inline-flex items-center gap-2 font-mono text-sm text-muted transition-colors hover:text-accent"
+              data-reveal
+            >
+              {action.label}
+              <svg
+                viewBox="0 0 24 24"
+                class="size-4 transition-transform duration-300 group-hover:translate-x-1"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </a>
+          )}
+        </div>
+      )
+    }
+
+    <slot />
+  </div>
+</section>

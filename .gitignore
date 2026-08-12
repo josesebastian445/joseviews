@@ -1,0 +1,27 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# secrets — never commit these
+.env
+.env.*
+!.env.example
+.dev.vars
+
+# cloudflare
+.wrangler/
+
+# logs
+npm-debug.log*
+yarn-error.log*
+*.log
+
+# editors / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db

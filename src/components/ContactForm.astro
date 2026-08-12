@@ -1,0 +1,276 @@
+---
+import { CONTACT } from '../consts';
+
+// Progressive enhancement: this is a real form with a real action. If the
+// JavaScript never runs, the mailto fallback below is still reachable, so a
+// visitor can always get in touch.
+const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '';
+---
+
+<form id="contact-form" method="POST" action="/api/contact" class="space-y-5" novalidate>
+  <!-- Honeypot: real people never fill this in. Hidden from AT as well. -->
+  <div class="absolute left-[-9999px]" aria-hidden="true">
+    <label for="company_website">Leave this field empty</label>
+    <input type="text" id="company_website" name="company_website" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <label for="name" class="mb-2 block font-mono text-[11px] uppercase tracking-[0.14em] text-faint">
+        Your name <span class="text-accent">*</span>
+      </label>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        required
+        autocomplete="name"
+        class="field"
+        placeholder="Ahmed Al Mansouri"
+      />
+    </div>
+
+    <div>
+      <label for="email" class="mb-2 block font-mono text-[11px] uppercase tracking-[0.14em] text-faint">
+        Email <span class="text-accent">*</span>
+      </label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        required
+        autocomplete="email"
+        class="field"
+        placeholder="you@company.ae"
+      />
+    </div>
+  </div>
+
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <label for="company" class="mb-2 block font-mono text-[11px] uppercase tracking-[0.14em] text-faint">
+        Company
+      </label>
+      <input
+        type="text"
+        id="company"
+        name="company"
+        autocomplete="organization"
+        class="field"
+        placeholder="Optional"
+      />
+    </div>
+
+    <div>
+      <label for="budget" class="mb-2 block font-mono text-[11px] uppercase tracking-[0.14em] text-faint">
+        Rough budget
+      </label>
+      <select id="budget" name="budget" class="field">
+        <option value="">Not sure yet</option>
+        <option>Under AED 5,000</option>
+        <option>AED 5,000 – 15,000</option>
+        <option>AED 15,000 – 40,000</option>
+        <option>AED 40,000+</option>
+        <option>Monthly retainer</option>
+      </select>
+    </div>
+  </div>
+
+  <fieldset>
+    <legend class="mb-3 font-mono text-[11px] uppercase tracking-[0.14em] text-faint">
+      What do you need? <span class="text-accent">*</span>
+    </legend>
+    <div class="flex flex-wrap gap-2">
+      {
+        ['New website', 'Fix / rescue', 'SEO', 'IT support', 'Security', 'Something else'].map(
+          (option) => (
+            <label class="chip">
+              <input type="checkbox" name="needs" value={option} class="sr-only" />
+              <span>{option}</span>
+            </label>
+          )
+        )
+      }
+    </div>
+  </fieldset>
+
+  <div>
+    <label for="message" class="mb-2 block font-mono text-[11px] uppercase tracking-[0.14em] text-faint">
+      Tell me about it <span class="text-accent">*</span>
+    </label>
+    <textarea
+      id="message"
+      name="message"
+      required
+      rows="6"
+      minlength="20"
+      class="field resize-y"
+      placeholder="What are you trying to achieve, what's in the way, and is there a deadline?"></textarea>
+    <p class="mt-2 font-mono text-[11px] text-faint">
+      The more specific you are, the more useful my first reply will be.
+    </p>
+  </div>
+
+  {
+    TURNSTILE_SITE_KEY && (
+      <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-theme="auto" />
+    )
+  }
+
+  <div class="flex flex-wrap items-center gap-4 pt-1">
+    <button type="submit" id="contact-submit" class="btn btn-primary !px-7 !py-3.5">
+      <span data-label>Send message</span>
+      <svg
+        viewBox="0 0 24 24"
+        class="size-4"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M5 12h14M13 6l6 6-6 6" />
+      </svg>
+    </button>
+
+    <p class="font-mono text-[11px] text-faint">
+      Or email me directly at{' '}
+      <a href={`mailto:${CONTACT.email}`} class="text-accent link-underline">{CONTACT.email}</a>
+    </p>
+  </div>
+
+  <!-- Live region so screen readers announce the outcome. -->
+  <p id="form-status" class="hidden font-mono text-sm" role="status" aria-live="polite"></p>
+</form>
+
+{
+  TURNSTILE_SITE_KEY && (
+    <script
+      is:inline
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+      async
+      defer
+    />
+  )
+}
+
+<style>
+  .field {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.6rem;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--surface-2) 55%, transparent);
+    color: var(--text);
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field::placeholder {
+    color: var(--text-faint);
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .field:user-invalid {
+    border-color: #ef4444;
+  }
+
+  select.field {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-faint) 50%),
+      linear-gradient(135deg, var(--text-faint) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 2.25rem;
+  }
+
+  /* Checkbox chips */
+  .chip {
+    cursor: pointer;
+    user-select: none;
+  }
+  .chip > span {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 0.85rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--surface-2) 55%, transparent);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    transition: all 0.2s;
+  }
+  .chip:hover > span {
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+  .chip > input:checked + span {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+  .chip > input:focus-visible + span {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
+  const status = document.getElementById('form-status');
+  const button = document.getElementById('contact-submit') as HTMLButtonElement | null;
+  const label = button?.querySelector('[data-label]');
+
+  const show = (message: string, ok: boolean) => {
+    if (!status) return;
+    status.textContent = message;
+    status.classList.remove('hidden');
+    status.style.color = ok ? 'var(--accent)' : '#ef4444';
+  };
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Native constraint validation first — no custom validator to keep in sync.
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const needs = form.querySelectorAll('input[name="needs"]:checked');
+    if (needs.length === 0) {
+      show('Please pick at least one thing you need help with.', false);
+      return;
+    }
+
+    if (button) button.disabled = true;
+    if (label) label.textContent = 'Sending…';
+    show('', true);
+    status?.classList.add('hidden');
+
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        body: new FormData(form),
+      });
+
+      if (!res.ok) throw new Error(String(res.status));
+
+      form.reset();
+      show("Thanks — that's with me. I'll reply within a few hours.", true);
+      if (label) label.textContent = 'Message sent';
+    } catch {
+      show(
+        'Something went wrong sending that. Please email iamjoseph.sebastian@gmail.com or message me on WhatsApp.',
+        false
+      );
+      if (button) button.disabled = false;
+      if (label) label.textContent = 'Try again';
+    }
+  });
+</script>

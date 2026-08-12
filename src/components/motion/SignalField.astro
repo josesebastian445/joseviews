@@ -1,0 +1,85 @@
+---
+/**
+ * The five-layer animated background.
+ *
+ * Layers 1-3 and 5 are pure CSS and cost nothing. Only layer 4 (the particle
+ * network) loads JavaScript, and it does so on idle so it can never compete
+ * with the hero for LCP.
+ *
+ * The whole stack is aria-hidden and pointer-events:none — decorative only.
+ */
+---
+
+<div class="bg-stack" aria-hidden="true" data-decorative>
+  <div class="bg-grid"></div>
+
+  <div class="bg-aurora">
+    <span></span><span></span><span></span>
+  </div>
+
+  <noscript><div class="bg-dots"></div></noscript>
+
+  <canvas class="bg-canvas" id="signal-field"></canvas>
+
+  <div class="bg-grain"></div>
+  <div class="bg-spotlight" id="bg-spotlight"></div>
+</div>
+
+<script>
+  import { initSignalField } from '../../lib/signal-field';
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const canvas = document.getElementById('signal-field') as HTMLCanvasElement | null;
+
+  if (canvas) {
+    if (reduce.matches) {
+      // Swap the canvas for the static dot grid rather than animating slowly.
+      canvas.remove();
+      const dots = document.createElement('div');
+      dots.className = 'bg-dots';
+      document.querySelector('.bg-stack')?.prepend(dots);
+    } else {
+      const mount = () => initSignalField(canvas);
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(mount, { timeout: 1200 });
+      } else {
+        setTimeout(mount, 200);
+      }
+    }
+  }
+
+  // Cursor spotlight — coalesced into one rAF write per frame so pointermove
+  // never triggers more than a single style recalculation.
+  const spotlight = document.getElementById('bg-spotlight');
+  if (spotlight && !reduce.matches && window.matchMedia('(pointer: fine)').matches) {
+    let x = 0;
+    let y = 0;
+    let queued = false;
+
+    const flush = () => {
+      queued = false;
+      spotlight.style.setProperty('--mx', `${x}px`);
+      spotlight.style.setProperty('--my', `${y}px`);
+    };
+
+    window.addEventListener(
+      'pointermove',
+      (e) => {
+        x = e.clientX;
+        y = e.clientY;
+        if (!spotlight.hasAttribute('data-active')) {
+          spotlight.setAttribute('data-active', '');
+        }
+        if (!queued) {
+          queued = true;
+          requestAnimationFrame(flush);
+        }
+      },
+      { passive: true }
+    );
+
+    document.addEventListener('pointerleave', () => {
+      spotlight.removeAttribute('data-active');
+    });
+  }
+</script>

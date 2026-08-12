@@ -1,0 +1,894 @@
+@import 'tailwindcss';
+
+/* Self-hosted fonts — no external requests, CSP-clean, no FOUT flash of a
+   third-party host being slow. Variable files keep the weight range cheap. */
+@import '@fontsource-variable/inter/wght.css';
+@import '@fontsource/instrument-serif/400.css';
+@import '@fontsource/instrument-serif/400-italic.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
+
+/* ==========================================================================
+   1. Palette
+   Raw values live on :root / [data-theme] so the whole site recolours by
+   flipping one attribute. Tailwind tokens below just point at them, which is
+   also how the canvas background reads the accent colour at runtime.
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+
+  --bg: #0b0c0e;
+  --bg-elevated: #111317;
+  --surface: #14171c;
+  --surface-2: #1a1e24;
+  --border: rgb(255 255 255 / 0.09);
+  --border-strong: rgb(255 255 255 / 0.16);
+
+  --text: #e9e9e6;
+  --text-muted: #9aa0a8;
+  /* 5.18:1 on --bg. The obvious choice (#6b7280) measures 4.02:1 and fails AA
+     for the small mono labels this is used on. */
+  --text-faint: #7c848f;
+
+  --accent: #4ade80;
+  --accent-strong: #22c55e;
+  --accent-contrast: #06210f;
+  --accent-glow: rgb(74 222 128 / 0.28);
+
+  --aurora-1: rgb(74 222 128 / 0.16);
+  --aurora-2: rgb(56 189 248 / 0.12);
+  --aurora-3: rgb(168 85 247 / 0.1);
+
+  --grid-line: rgb(255 255 255 / 0.045);
+  --spotlight: rgb(74 222 128 / 0.09);
+  --grain-opacity: 0.05;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 32px rgb(0 0 0 / 0.35);
+
+  --header-h: 4.5rem;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #fafaf8;
+  --bg-elevated: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f3f3ef;
+  --border: rgb(15 23 42 / 0.1);
+  --border-strong: rgb(15 23 42 / 0.18);
+
+  --text: #14161a;
+  --text-muted: #545a63;
+  --text-faint: #5f6873; /* 5.41:1 on --bg */
+
+  --accent: #15803d;
+  --accent-strong: #166534;
+  --accent-contrast: #ffffff;
+  --accent-glow: rgb(21 128 61 / 0.2);
+
+  --aurora-1: rgb(34 197 94 / 0.12);
+  --aurora-2: rgb(14 165 233 / 0.1);
+  --aurora-3: rgb(168 85 247 / 0.08);
+
+  --grid-line: rgb(15 23 42 / 0.05);
+  --spotlight: rgb(21 128 61 / 0.07);
+  --grain-opacity: 0.035;
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05), 0 8px 28px rgb(15 23 42 / 0.07);
+}
+
+/* Respect the OS when the visitor has never touched the toggle. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+
+    --bg: #fafaf8;
+    --bg-elevated: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f3f3ef;
+    --border: rgb(15 23 42 / 0.1);
+    --border-strong: rgb(15 23 42 / 0.18);
+
+    --text: #14161a;
+    --text-muted: #545a63;
+    --text-faint: #5f6873; /* 5.41:1 on --bg */
+
+    --accent: #15803d;
+    --accent-strong: #166534;
+    --accent-contrast: #ffffff;
+    --accent-glow: rgb(21 128 61 / 0.2);
+
+    --aurora-1: rgb(34 197 94 / 0.12);
+    --aurora-2: rgb(14 165 233 / 0.1);
+    --aurora-3: rgb(168 85 247 / 0.08);
+
+    --grid-line: rgb(15 23 42 / 0.05);
+    --spotlight: rgb(21 128 61 / 0.07);
+    --grain-opacity: 0.035;
+
+    --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05), 0 8px 28px rgb(15 23 42 / 0.07);
+  }
+}
+
+/* ==========================================================================
+   2. Tailwind token bridge
+   ========================================================================== */
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-ink: var(--text);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-contrast: var(--accent-contrast);
+
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Instrument Serif', ui-serif, Georgia, 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', 'Cascadia Code', monospace;
+
+  --radius-card: 0.875rem;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ==========================================================================
+   3. Base
+   ========================================================================== */
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Anchor links must clear the sticky header. */
+    scroll-padding-top: calc(var(--header-h) + 1.5rem);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    /* The fixed background layers sit behind everything. */
+    position: relative;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  /* Never trap keyboard users behind a decorative canvas. */
+  [data-decorative] {
+    pointer-events: none;
+    user-select: none;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 99px;
+    border: 2px solid var(--bg);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+  }
+}
+
+/* ==========================================================================
+   4. Component utilities
+   ========================================================================== */
+
+@layer components {
+  .container-page {
+    width: 100%;
+    max-width: 78rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .container-page {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* The monospace section markers that carry the terminal motif. */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .eyebrow::before {
+    content: '';
+    width: 1.75rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.6;
+  }
+
+  .card {
+    background: color-mix(in oklab, var(--surface) 78%, transparent);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Buttons */
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    padding: 0.8rem 1.35rem;
+    border-radius: 0.6rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      border-color 0.2s,
+      box-shadow 0.3s,
+      transform 0.15s var(--ease-out-expo);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    font-weight: 600;
+    overflow: hidden;
+  }
+  .btn-primary:hover {
+    background: var(--accent-strong);
+    box-shadow: 0 0 0 1px var(--accent), 0 8px 30px var(--accent-glow);
+  }
+  /* Shimmer sweep — decorative, hidden from reduced-motion users. */
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      110deg,
+      transparent 20%,
+      rgb(255 255 255 / 0.35) 45%,
+      transparent 70%
+    );
+    transform: translateX(-120%);
+    animation: shimmer 4.5s var(--ease-out-expo) infinite;
+    pointer-events: none;
+  }
+
+  .btn-ghost {
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    background: color-mix(in oklab, var(--surface) 45%, transparent);
+    backdrop-filter: blur(8px);
+  }
+  .btn-ghost:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Links inside body copy get an underline that draws in on hover. */
+  .link-underline {
+    background-image: linear-gradient(var(--accent), var(--accent));
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 1px;
+    transition: background-size 0.3s var(--ease-out-expo);
+  }
+  .link-underline:hover {
+    background-size: 100% 1px;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    padding: 0.2rem 0.55rem;
+    border-radius: 0.35rem;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    background: color-mix(in oklab, var(--surface-2) 60%, transparent);
+    transition: color 0.2s, border-color 0.2s;
+  }
+  a.tag:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .section {
+    padding-block: clamp(4rem, 9vw, 7.5rem);
+  }
+}
+
+/* ==========================================================================
+   5. Background stack — "Signal Field"
+   Five fixed layers behind the page. Layers 1-3 and 5 are pure CSS; only the
+   particle network (layer 4) costs JavaScript.
+   ========================================================================== */
+
+.bg-stack {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+}
+
+/* Layer 1 — masked grid */
+.bg-grid {
+  position: absolute;
+  inset: -1px;
+  background-image: linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 100% 70% at 50% 0%, #000 20%, transparent 78%);
+}
+
+/* Layer 2 — drifting aurora blobs */
+.bg-aurora {
+  position: absolute;
+  inset: 0;
+  filter: blur(72px);
+}
+.bg-aurora span {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  will-change: transform;
+}
+.bg-aurora span:nth-child(1) {
+  width: 46vw;
+  height: 46vw;
+  min-width: 320px;
+  min-height: 320px;
+  top: -12vh;
+  left: -6vw;
+  background: var(--aurora-1);
+  animation: drift-a 34s ease-in-out infinite alternate;
+}
+.bg-aurora span:nth-child(2) {
+  width: 40vw;
+  height: 40vw;
+  min-width: 280px;
+  min-height: 280px;
+  top: 8vh;
+  right: -8vw;
+  background: var(--aurora-2);
+  animation: drift-b 42s ease-in-out infinite alternate;
+}
+.bg-aurora span:nth-child(3) {
+  width: 34vw;
+  height: 34vw;
+  min-width: 240px;
+  min-height: 240px;
+  top: 46vh;
+  left: 28vw;
+  background: var(--aurora-3);
+  animation: drift-c 50s ease-in-out infinite alternate;
+}
+
+/* Layer 4 — the particle network canvas (mounted by JS) */
+.bg-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1.2s ease-out;
+}
+.bg-canvas[data-ready] {
+  opacity: 1;
+}
+
+/* Static stand-in when motion is reduced or the device is weak. */
+.bg-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--grid-line) 1.4px, transparent 1.4px);
+  background-size: 30px 30px;
+  mask-image: radial-gradient(ellipse 90% 60% at 50% 10%, #000 10%, transparent 75%);
+}
+
+/* Layer 3 — grain, sits above the colour to kill gradient banding */
+.bg-grain {
+  position: absolute;
+  inset: -50%;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* Layer 5 — cursor spotlight, driven by two CSS vars updated in rAF */
+.bg-spotlight {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    420px circle at var(--mx, 50%) var(--my, 30%),
+    var(--spotlight),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+}
+.bg-spotlight[data-active] {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   6. Motion primitives
+   ========================================================================== */
+
+/* Scroll reveal — IntersectionObserver adds [data-visible]. Content is fully
+   readable without JS because the no-js fallback resets these to visible. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s var(--ease-out-expo),
+    transform 0.7s var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+[data-reveal][data-visible] {
+  opacity: 1;
+  transform: none;
+}
+.no-js [data-reveal] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Per-word headline mask reveal. Each word sits in an overflow-hidden span
+   and rises into place; only transform/opacity animate, so CLS stays at 0. */
+.word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.word-mask > span {
+  display: inline-block;
+  transform: translateY(105%);
+  animation: word-rise 0.85s var(--ease-out-expo) forwards;
+  animation-delay: var(--word-delay, 0ms);
+}
+
+/* Blinking block cursor for the terminal + typewriter */
+.caret::after {
+  content: '';
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 0.12em;
+  background: var(--accent);
+  vertical-align: -0.16em;
+  animation: blink 1.05s steps(2, start) infinite;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 46s linear infinite;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* 3D tilt containers */
+.tilt {
+  transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.35s var(--ease-out-expo);
+  transform-style: preserve-3d;
+}
+
+.pulse-dot {
+  position: relative;
+}
+.pulse-dot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes word-rise {
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes shimmer {
+  0%,
+  55% {
+    transform: translateX(-120%);
+  }
+  90%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes ping {
+  70%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+@keyframes drift-a {
+  to {
+    transform: translate3d(12vw, 14vh, 0) scale(1.18);
+  }
+}
+@keyframes drift-b {
+  to {
+    transform: translate3d(-14vw, 10vh, 0) scale(0.85);
+  }
+}
+@keyframes drift-c {
+  to {
+    transform: translate3d(8vw, -16vh, 0) scale(1.25);
+  }
+}
+
+/* ==========================================================================
+   7. Reduced motion — suppress, don't merely slow
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .bg-aurora span,
+  .btn-primary::after,
+  .marquee-track,
+  .pulse-dot::before,
+  .caret::after {
+    animation: none !important;
+  }
+
+  .btn-primary::after {
+    display: none;
+  }
+
+  [data-reveal],
+  .word-mask > span {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .tilt {
+    transform: none !important;
+  }
+}
+
+/* ==========================================================================
+   8. Long-form article typography (blog + case studies)
+   ========================================================================== */
+
+.prose {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--text);
+  max-width: 68ch;
+}
+.prose > * + * {
+  margin-top: 1.35em;
+}
+.prose h2 {
+  font-size: clamp(1.65rem, 3.4vw, 2.1rem);
+  margin-top: 2.4em;
+  margin-bottom: 0.1em;
+  scroll-margin-top: calc(var(--header-h) + 2rem);
+}
+.prose h3 {
+  font-size: clamp(1.3rem, 2.6vw, 1.55rem);
+  margin-top: 1.9em;
+  margin-bottom: 0.1em;
+  scroll-margin-top: calc(var(--header-h) + 2rem);
+}
+.prose h2 + *,
+.prose h3 + * {
+  margin-top: 0.7em;
+}
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in oklab, var(--accent) 45%, transparent);
+}
+.prose a:hover {
+  text-decoration-color: var(--accent);
+}
+.prose strong {
+  font-weight: 650;
+  color: var(--text);
+}
+.prose ul,
+.prose ol {
+  padding-left: 1.35em;
+}
+.prose ul {
+  list-style: none;
+}
+.prose ul > li {
+  position: relative;
+}
+.prose ul > li::before {
+  content: '';
+  position: absolute;
+  left: -1.05em;
+  top: 0.72em;
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background: var(--accent);
+}
+.prose ol {
+  list-style: decimal;
+}
+.prose li + li {
+  margin-top: 0.5em;
+}
+.prose blockquote {
+  border-left: 2px solid var(--accent);
+  padding-left: 1.15em;
+  font-family: var(--font-display);
+  font-size: 1.3em;
+  line-height: 1.45;
+  color: var(--text);
+}
+.prose code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  padding: 0.15em 0.4em;
+  border-radius: 0.3rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.prose pre {
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  tab-size: 2;
+}
+.prose img {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
+}
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin-block: 2.5em;
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.94em;
+}
+.prose th,
+.prose td {
+  border: 1px solid var(--border);
+  padding: 0.6em 0.8em;
+  text-align: left;
+}
+.prose th {
+  background: var(--surface-2);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   9. Print — turns /about into a clean, ATS-readable CV
+   Keeping the CV as a printed view of the live page means it can never drift
+   out of date, and no PDF containing personal identifiers has to be hosted.
+   ========================================================================== */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 14mm 16mm;
+  }
+
+  :root {
+    --bg: #ffffff;
+    --text: #111111;
+    --text-muted: #333333;
+    --text-faint: #555555;
+    --accent: #0f5132;
+    --border: #cccccc;
+    --surface: #ffffff;
+    --surface-2: #f5f5f5;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #111 !important;
+    font-size: 10.5pt;
+  }
+
+  /* Everything that is navigation, decoration or interaction goes. */
+  .bg-stack,
+  header#site-header,
+  #mobile-menu,
+  #whatsapp-fab,
+  footer,
+  .btn,
+  #print-cv,
+  .eyebrow::before,
+  [data-decorative] {
+    display: none !important;
+  }
+
+  main {
+    padding-top: 0 !important;
+  }
+
+  .container-page {
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  .section {
+    padding-block: 0.8rem;
+    border: 0 !important;
+  }
+
+  .card {
+    border: 1px solid #ccc !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Reveal animations must not leave content invisible on paper. */
+  [data-reveal],
+  .word-mask > span {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  h1 {
+    font-size: 22pt !important;
+    line-height: 1.15 !important;
+  }
+  h2 {
+    font-size: 14pt !important;
+    margin-top: 0.6rem;
+  }
+  h3 {
+    font-size: 11.5pt !important;
+  }
+
+  .tag {
+    border-color: #bbb !important;
+    color: #222 !important;
+    background: #f5f5f5 !important;
+  }
+
+  a {
+    color: #0f5132 !important;
+    text-decoration: none !important;
+  }
+
+  /* Keep each role on one page where possible. */
+  ol > li,
+  section {
+    break-inside: avoid;
+  }
+
+  /* The grid layouts collapse to single column so nothing is clipped. */
+  .grid {
+    display: block !important;
+  }
+  .grid > * + * {
+    margin-top: 0.9rem;
+  }
+}
+
+/* Shiki renders both themes; show the one matching the active palette. */
+.astro-code,
+.astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+:root[data-theme='light'] .astro-code,
+:root[data-theme='light'] .astro-code span {
+  color: var(--shiki-light) !important;
+  background-color: var(--shiki-light-bg) !important;
+  font-style: var(--shiki-light-font-style) !important;
+  font-weight: var(--shiki-light-font-weight) !important;
+  text-decoration: var(--shiki-light-text-decoration) !important;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) .astro-code,
+  :root:not([data-theme='dark']) .astro-code span {
+    color: var(--shiki-light) !important;
+    background-color: var(--shiki-light-bg) !important;
+    font-style: var(--shiki-light-font-style) !important;
+    font-weight: var(--shiki-light-font-weight) !important;
+    text-decoration: var(--shiki-light-text-decoration) !important;
+  }
+}

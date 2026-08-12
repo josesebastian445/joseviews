@@ -1,0 +1,85 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostGrid from '../../components/PostGrid.astro';
+import { getPublishedPosts, getTagCounts, paginateSlice, totalPages, tagSlug } from '../../lib/posts';
+import { SITE } from '../../consts';
+
+const all = await getPublishedPosts();
+const posts = paginateSlice(all, 1);
+const pages = totalPages(all.length);
+const tags = await getTagCounts();
+
+const schema = [
+  {
+    '@type': 'Blog',
+    '@id': `${SITE.url}/blog#blog`,
+    name: `${SITE.name} — Blog`,
+    description:
+      'Practical notes on web development, SEO and IT infrastructure, written from real client work in Dubai.',
+    url: `${SITE.url}/blog`,
+    author: { '@id': `${SITE.url}/#person` },
+    blogPost: all.slice(0, 10).map((p) => ({
+      '@type': 'BlogPosting',
+      headline: p.data.title,
+      url: `${SITE.url}/blog/${p.id}`,
+      datePublished: p.data.pubDate.toISOString(),
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="Blog"
+  description="Practical notes on web development, SEO, WordPress and IT infrastructure — written from real client work in Dubai. A new post most weeks."
+  schema={schema}
+>
+  <header class="container-page pt-16 md:pt-24">
+    <div class="max-w-3xl">
+      <p class="eyebrow mb-5" data-reveal>// Writing</p>
+      <h1 class="text-[clamp(2.5rem,7vw,4.5rem)]" data-reveal>
+        Notes from<br /><span class="text-accent">the work.</span>
+      </h1>
+      <p class="mt-6 text-lg leading-relaxed text-muted" data-reveal style="--reveal-delay:100ms">
+        Whatever I had to figure out that week — WordPress, Next.js, Astro, technical
+        SEO, firewalls, hosting. Written down so the next person doesn't have to work
+        it out from scratch.
+      </p>
+      <p class="mt-5 font-mono text-sm text-faint" data-reveal style="--reveal-delay:160ms">
+        <a href="/rss.xml" class="text-accent link-underline">Subscribe via RSS</a> · {all.length}
+        {' '}post{all.length === 1 ? '' : 's'} and counting
+      </p>
+    </div>
+
+    {
+      tags.length > 0 && (
+        <ul class="mt-10 flex flex-wrap gap-2" data-reveal style="--reveal-delay:220ms">
+          {tags.map(([tag, count]) => (
+            <li>
+              <a href={`/blog/tag/${tagSlug(tag)}`} class="tag">
+                {tag}
+                <span class="ml-1.5 text-faint">{count}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </header>
+
+  <div class="container-page section">
+    <PostGrid posts={posts} emptyMessage="No posts published yet — the first one is being written." />
+
+    {
+      pages > 1 && (
+        <nav
+          class="mt-16 flex items-center justify-between border-t border-line pt-8 font-mono text-sm"
+          aria-label="Pagination"
+        >
+          <span class="text-faint/40">← Newer</span>
+          <span class="text-faint">1 / {pages}</span>
+          <a href="/blog/page/2" class="text-muted transition-colors hover:text-accent">Older →</a>
+        </nav>
+      )
+    }
+  </div>
+</BaseLayout>

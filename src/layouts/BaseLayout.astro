@@ -1,0 +1,81 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppFAB from '../components/WhatsAppFAB.astro';
+import SignalField from '../components/motion/SignalField.astro';
+import { SITE } from '../consts';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  article?: { publishedTime: Date; modifiedTime?: Date; tags?: string[] };
+  noindex?: boolean;
+  schema?: Record<string, unknown>[];
+  /** Home page renders the hero flush to the top; every other page needs padding. */
+  padTop?: boolean;
+}
+
+const { padTop = true, ...head } = Astro.props;
+---
+
+<!doctype html>
+<html lang={SITE.lang} class="no-js">
+  <head>
+    <BaseHead {...head} />
+
+    <script is:inline>
+      // Runs before first paint: applies the stored theme so there is never a
+      // flash of the wrong palette, and swaps the no-js class so CSS knows
+      // JavaScript-dependent effects are safe to hide their fallbacks.
+      (function () {
+        document.documentElement.classList.remove('no-js');
+        try {
+          var stored = localStorage.getItem('theme');
+          if (stored === 'light' || stored === 'dark') {
+            document.documentElement.setAttribute('data-theme', stored);
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+
+  <body class="flex min-h-dvh flex-col">
+    <SignalField />
+    <Header />
+
+    <main id="main" class:list={[padTop && 'pt-[var(--header-h)]']}>
+      <slot />
+    </main>
+
+    <Footer />
+    <WhatsAppFAB />
+
+    <script>
+      import { initAll } from '../lib/motion';
+
+      initAll();
+
+      // Scroll reveal. One shared observer for the whole page; elements
+      // unobserve after firing so nothing keeps running once revealed.
+      const els = document.querySelectorAll('[data-reveal]');
+
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              entry.target.setAttribute('data-visible', '');
+              io.unobserve(entry.target);
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 }
+        );
+        els.forEach((el) => io.observe(el));
+      } else {
+        els.forEach((el) => el.setAttribute('data-visible', ''));
+      }
+    </script>
+  </body>
+</html>

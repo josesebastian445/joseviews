@@ -1,0 +1,251 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import PostCard from '../../components/PostCard.astro';
+import { SITE } from '../../consts';
+
+export async function getStaticPaths() {
+  // Drafts stay visible in `astro dev` so they can be previewed, but never ship.
+  const posts = await getCollection('blog', ({ data }) => !data.draft || import.meta.env.DEV);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const { Content, headings, remarkPluginFrontmatter } = await render(post);
+const { title, description, pubDate, updatedDate, heroImage, heroAlt, tags } = post.data;
+
+const readingTime: string = remarkPluginFrontmatter.readingTime ?? '';
+
+// Related posts, scored by shared tags. Internal linking is the cheapest SEO
+// win on a growing blog, so it is generated rather than hand-maintained.
+const all = await getCollection('blog', ({ data }) => !data.draft || import.meta.env.DEV);
+const related = all
+  .filter((p) => p.id !== post.id)
+  .map((p) => ({ post: p, score: p.data.tags.filter((t) => tags.includes(t)).length }))
+  .sort((a, b) => b.score - a.score || b.post.data.pubDate.valueOf() - a.post.data.pubDate.valueOf())
+  .slice(0, 3)
+  .map((r) => r.post);
+
+const postUrl = new URL(`/blog/${post.id}`, Astro.site).href;
+const ogImage = `/og/blog/${post.id}.png`;
+
+const schema = [
+  {
+    '@type': 'BlogPosting',
+    '@id': `${postUrl}#article`,
+    headline: title,
+    description,
+    datePublished: pubDate.toISOString(),
+    dateModified: (updatedDate ?? pubDate).toISOString(),
+    author: { '@id': `${SITE.url}/#person` },
+    publisher: { '@id': `${SITE.url}/#person` },
+    mainEntityOfPage: postUrl,
+    image: new URL(ogImage, Astro.site).href,
+    keywords: tags.join(', '),
+    inLanguage: 'en',
+    wordCount: remarkPluginFrontmatter.words,
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.url },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE.url}/blog` },
+      { '@type': 'ListItem', position: 3, name: title, item: postUrl },
+    ],
+  },
+];
+
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  image={ogImage}
+  article={{ publishedTime: pubDate, modifiedTime: updatedDate, tags: [...tags] }}
+  schema={schema}
+>
+  <article>
+    <!-- ============ Header ============ -->
+    <header class="container-page pt-14 md:pt-20">
+      <div class="mx-auto max-w-3xl">
+        <nav aria-label="Breadcrumb" class="mb-8">
+          <ol class="flex items-center gap-2 font-mono text-xs text-faint">
+            <li><a href="/" class="transition-colors hover:text-accent">Home</a></li>
+            <li aria-hidden="true">/</li>
+            <li><a href="/blog" class="transition-colors hover:text-accent">Blog</a></li>
+          </ol>
+        </nav>
+
+        <div class="flex flex-wrap items-center gap-3 font-mono text-xs uppercase tracking-[0.12em] text-faint">
+          <FormattedDate date={pubDate} format="long" />
+          {readingTime && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>{readingTime}</span>
+            </>
+          )}
+          {updatedDate && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span class="text-accent">Updated <FormattedDate date={updatedDate} /></span>
+            </>
+          )}
+        </div>
+
+        <h1 class="mt-5 text-[clamp(2.2rem,5.5vw,3.75rem)]">{title}</h1>
+        <p class="mt-5 text-lg leading-relaxed text-muted">{description}</p>
+
+        {
+          tags.length > 0 && (
+            <ul class="mt-7 flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <li>
+                  <a href={`/blog/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`} class="tag">
+                    #{tag}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+
+      {
+        heroImage && (
+          <div class="mx-auto mt-12 max-w-4xl overflow-hidden rounded-xl border border-line">
+            <Image
+              src={heroImage}
+              alt={heroAlt ?? ''}
+              widths={[600, 900, 1400]}
+              sizes="(min-width: 1024px) 900px, 100vw"
+              class="w-full"
+              loading="eager"
+            />
+          </div>
+        )
+      }
+    </header>
+
+    <!-- ============ Body ============ -->
+    <div class="container-page mt-14 md:mt-16">
+      <div class="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[minmax(0,1fr)_15rem] lg:gap-16">
+        <div class="prose mx-auto lg:mx-0">
+          <Content />
+        </div>
+
+        {
+          toc.length > 2 && (
+            <aside class="order-first lg:order-last">
+              <div class="lg:sticky lg:top-[calc(var(--header-h)+2rem)]">
+                <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-faint">
+                  On this page
+                </p>
+                <nav aria-label="Table of contents" class="mt-4">
+                  <ul class="space-y-2.5 border-l border-line text-sm">
+                    {toc.map((h) => (
+                      <li>
+                        <a
+                          href={`#${h.slug}`}
+                          class:list={[
+                            'block border-l -ml-px py-0.5 pl-4 text-muted transition-colors hover:border-accent hover:text-accent',
+                            h.depth === 3 ? 'pl-7 text-[0.8rem]' : '',
+                            'border-transparent',
+                          ]}
+                          data-toc-link={h.slug}
+                        >
+                          {h.text}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              </div>
+            </aside>
+          )
+        }
+      </div>
+    </div>
+
+    <!-- ============ Footer / share ============ -->
+    <div class="container-page mt-16">
+      <div
+        class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-5 border-t border-line pt-8"
+      >
+        <p class="font-mono text-xs text-faint">
+          Written by <a href="/about" class="text-accent link-underline">Jose Sebastian</a> in {SITE.city}
+        </p>
+        <div class="flex flex-wrap items-center gap-2">
+          <a
+            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(postUrl)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="tag hover:!border-accent"
+          >
+            Share on LinkedIn
+          </a>
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(`${title} ${postUrl}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="tag hover:!border-accent"
+          >
+            Share on WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ Related ============ -->
+    {
+      related.length > 0 && (
+        <section class="section" aria-labelledby="related-heading">
+          <div class="container-page">
+            <div class="mx-auto max-w-6xl">
+              <h2 id="related-heading" class="mb-10 text-3xl">
+                Keep reading
+              </h2>
+              <div class="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+                {related.map((p, i) => (
+                  <PostCard post={p} index={i} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )
+    }
+  </article>
+
+  <script>
+    // Highlight the current section in the table of contents.
+    const links = document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]');
+    const headings = Array.from(document.querySelectorAll('.prose h2, .prose h3'));
+
+    if (links.length && headings.length && 'IntersectionObserver' in window) {
+      const setActive = (slug: string) => {
+        links.forEach((l) => {
+          const on = l.dataset.tocLink === slug;
+          l.classList.toggle('!border-accent', on);
+          l.classList.toggle('!text-accent', on);
+        });
+      };
+
+      const io = new IntersectionObserver(
+        (entries) => {
+          const visible = entries.filter((e) => e.isIntersecting);
+          if (visible.length) setActive(visible[0].target.id);
+        },
+        { rootMargin: '-10% 0px -70% 0px' }
+      );
+
+      headings.forEach((h) => io.observe(h));
+    }
+  </script>
+</BaseLayout>

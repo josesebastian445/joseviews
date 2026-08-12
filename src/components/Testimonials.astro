@@ -1,0 +1,45 @@
+---
+import { getCollection } from 'astro:content';
+import Section from './Section.astro';
+
+const testimonials = (await getCollection('testimonials')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+---
+
+{
+  /* Renders nothing until real testimonials exist. See
+     src/content/testimonials/README.md for how to add them. */
+  testimonials.length > 0 && (
+    <Section eyebrow="// What clients say" title="In their words">
+      <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {testimonials.map((t, i) => (
+          <figure
+            class="card flex h-full flex-col p-7"
+            data-reveal
+            style={`--reveal-delay:${i * 90}ms`}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              class="size-7 text-accent/40"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M9.6 5.2c-3.3 1.5-5.6 4.6-5.6 8.3 0 3.2 2 5.3 4.6 5.3 2.4 0 4.2-1.8 4.2-4.1 0-2.3-1.6-4-3.8-4-.4 0-.9.1-1 .1.4-1.7 2-3.6 4-4.6l-2.4-1Zm9.4 0c-3.3 1.5-5.6 4.6-5.6 8.3 0 3.2 2 5.3 4.6 5.3 2.4 0 4.2-1.8 4.2-4.1 0-2.3-1.6-4-3.8-4-.4 0-.9.1-1 .1.4-1.7 2-3.6 4-4.6l-2.4-1Z" />
+            </svg>
+            <blockquote class="mt-4 flex-1 text-[1.05rem] leading-relaxed">
+              {t.data.quote}
+            </blockquote>
+            <figcaption class="mt-6 border-t border-line pt-5">
+              <p class="font-medium">{t.data.name}</p>
+              <p class="mt-0.5 font-mono text-xs text-faint">
+                {t.data.role}
+                {t.data.company && ` · ${t.data.company}`}
+              </p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </Section>
+  )
+}

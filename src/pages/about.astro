@@ -1,0 +1,328 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE, CONTACT, SOCIAL } from '../consts';
+
+// Career history, drawn from the CV. Personal identifiers from the CV —
+// passport number, date of birth, home address — are deliberately absent:
+// this page is indexed, and none of that belongs in a search result.
+const TIMELINE = [
+  {
+    role: 'IT Manager & Web Developer',
+    org: 'Best Solution Services',
+    place: 'Dubai, UAE',
+    period: 'Jan 2022 — Present',
+    current: true,
+    points: [
+      'Full-stack management of corporate and client sites in WordPress, Next.js, Astro and React.',
+      'Website performance, SEO and data-security compliance across every hosted platform.',
+      'CRM systems and automation workflows for marketing and client acquisition.',
+      'Web and IT security — backups, SSL, and FortiGate / Cloudflare firewall administration.',
+      'GitHub version control, CI/CD pipelines and technical documentation.',
+      'Digital campaigns and conversion work across SEO, PPC and content.',
+    ],
+  },
+  {
+    role: 'IT Support & SEO Specialist',
+    org: 'Peninsula Business Solutions Ltd',
+    place: 'Dubai, UAE',
+    period: 'Oct 2019 — Dec 2021',
+    points: [
+      'Technical and remote IT support for local and international clients.',
+      'WordPress and WooCommerce site management — uptime, security and optimisation.',
+      'SEO and SEM strategy that improved organic ranking and traffic.',
+      'Hosting environments across GoDaddy, Bluehost, AWS and Hetzner.',
+      'Office 365, FortiGate firewall, server and network infrastructure.',
+      'Digital ad campaigns, keyword analysis and analytics reporting.',
+      'Trained junior developers on digital best practice.',
+    ],
+  },
+  {
+    role: 'Office Administrator & SEO Executive',
+    org: 'Respocapa Technologies',
+    place: 'Angamaly, Kerala, India',
+    period: 'Jun 2017 — Jun 2019',
+    points: [
+      'Digital marketing across content creation, on-page and off-page SEO, and campaign performance.',
+      'Office administration and IT coordination.',
+      'Project documentation, testing plans and bug-free releases.',
+      'Remote client support, system stability and uptime.',
+    ],
+  },
+  {
+    role: 'Technical Assistant & Developer',
+    org: 'V-Care Consultancies / Federal Bank',
+    place: 'Aluva, Kerala, India',
+    period: 'Feb 2016 — May 2017',
+    points: [
+      'Supported IBM Finacle banking software and resolved application issues for branch systems.',
+      'Code reviews, debugging and integration testing of .NET banking applications.',
+      'Designed and maintained SQL Server databases; produced daily and analytical reports.',
+      'Secure data handling with encryption, and remote troubleshooting for branches.',
+    ],
+  },
+];
+
+const SKILLS = [
+  {
+    group: 'Development',
+    items: ['Next.js', 'Astro', 'React', 'WordPress', 'WooCommerce', 'C#', 'VB.NET', 'HTML', 'CSS', 'SQL'],
+  },
+  {
+    group: 'Infrastructure',
+    items: ['AWS', 'Hetzner', 'Cloudflare', 'FortiGate', 'Office 365', 'Linux', 'Windows Server'],
+  },
+  { group: 'Databases', items: ['MySQL', 'SQL Server'] },
+  {
+    group: 'SEO & Analytics',
+    items: ['Ahrefs', 'SEMrush', 'Screaming Frog', 'RankWatch', 'GTmetrix', 'Google Analytics', 'Search Console'],
+  },
+  { group: 'Delivery', items: ['GitHub', 'CI/CD', 'Project planning', 'Team leadership', 'Client communication'] },
+];
+
+const EDUCATION = [
+  { qualification: 'Master of Computer Applications (MCA)', school: 'Mahatma Gandhi University', year: '2014' },
+  { qualification: 'BSc Chemistry', school: 'Mahatma Gandhi University', year: '2011' },
+];
+
+const schema = [
+  {
+    '@type': 'AboutPage',
+    name: 'About Jose Sebastian',
+    url: `${SITE.url}/about`,
+    mainEntity: { '@id': `${SITE.url}/#person` },
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.url },
+      { '@type': 'ListItem', position: 2, name: 'About', item: `${SITE.url}/about` },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="About"
+  description="IT Manager and web developer in Dubai with 7+ years across web development, SEO and IT infrastructure — from core banking systems to modern JavaScript front ends."
+  image="/og/page/about.png"
+  schema={schema}
+>
+  <div id="cv">
+    <header class="container-page pt-16 md:pt-24">
+      <div class="grid gap-12 lg:grid-cols-[1.3fr_1fr] lg:gap-16">
+        <div>
+          <p class="eyebrow mb-5" data-reveal>// About</p>
+          <h1 class="text-[clamp(2.5rem,7vw,4.5rem)]" data-reveal>
+            I build it, host it,<br />secure it and<br />
+            <span class="text-accent">make it rank.</span>
+          </h1>
+
+          <div
+            class="mt-8 max-w-2xl space-y-5 text-[1.05rem] leading-relaxed text-muted"
+            data-reveal
+            style="--reveal-delay:100ms"
+          >
+            <p>
+              I'm Jose Sebastian, an IT Manager and web developer based in {SITE.city}. I've
+              spent over seven years on the technical side of businesses — the websites,
+              the servers behind them, the firewalls in front of them, and the search
+              visibility that decides whether anyone finds them.
+            </p>
+            <p>
+              I started in banking IT in Kerala, supporting IBM Finacle and the .NET
+              applications around it. It taught me that shipping without testing is not
+              boldness, it is negligence — and that habit has stayed with me through
+              every web project since.
+            </p>
+            <p>
+              Since moving to Dubai in 2019 I've worked across agencies and in-house
+              teams, running everything from WooCommerce stores and Office 365 tenants
+              to SEO campaigns and Next.js builds.
+            </p>
+            <p class="text-ink">
+              The useful thing about that range is that I don't have to hand you off. When
+              a site is slow, I can tell you whether it's the hosting, the theme, the
+              images or the DNS — and then fix it.
+            </p>
+          </div>
+
+          <div class="mt-9 flex flex-wrap gap-3" data-reveal style="--reveal-delay:160ms">
+            <a href="/contact" class="btn btn-primary !px-6 !py-3.5" data-magnetic="0.25">
+              Work with me
+            </a>
+            <button type="button" id="print-cv" class="btn btn-ghost !px-6 !py-3.5">
+              Download as PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- Fact card -->
+        <aside class="lg:justify-self-end" data-reveal style="--reveal-delay:220ms">
+          <div class="card w-full max-w-sm p-6">
+            <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-faint">At a glance</p>
+            <dl class="mt-4 space-y-3.5 text-sm">
+              <div class="flex justify-between gap-4">
+                <dt class="text-muted">Location</dt>
+                <dd class="font-medium">{SITE.city}, {SITE.countryName}</dd>
+              </div>
+              <div class="flex justify-between gap-4">
+                <dt class="text-muted">Experience</dt>
+                <dd class="font-medium">7+ years</dd>
+              </div>
+              <div class="flex justify-between gap-4">
+                <dt class="text-muted">Education</dt>
+                <dd class="font-medium">MCA</dd>
+              </div>
+              <div class="flex justify-between gap-4">
+                <dt class="text-muted">Languages</dt>
+                <dd class="text-right font-medium">English · Hindi · Malayalam</dd>
+              </div>
+              <div class="flex justify-between gap-4">
+                <dt class="text-muted">Email</dt>
+                <dd class="text-right">
+                  <a href={`mailto:${CONTACT.email}`} class="break-all font-medium text-accent">
+                    {CONTACT.email}
+                  </a>
+                </dd>
+              </div>
+              <div class="flex justify-between gap-4">
+                <dt class="text-muted">Phone</dt>
+                <dd>
+                  <a href={`tel:${CONTACT.phone}`} class="font-medium text-accent">
+                    {CONTACT.phoneDisplay}
+                  </a>
+                </dd>
+              </div>
+            </dl>
+
+            <div class="mt-5 flex flex-wrap gap-2 border-t border-line pt-5">
+              {
+                SOCIAL.map((s) => (
+                  <a
+                    href={s.url}
+                    target={s.url.startsWith('mailto:') ? undefined : '_blank'}
+                    rel="noopener noreferrer"
+                    class="tag"
+                  >
+                    {s.name}
+                  </a>
+                ))
+              }
+            </div>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <!-- ============ Experience timeline ============ -->
+    <section class="section" aria-labelledby="experience-heading">
+      <div class="container-page">
+        <p class="eyebrow mb-5" data-reveal>// Experience</p>
+        <h2 id="experience-heading" class="mb-14 text-[clamp(2rem,5vw,3rem)]" data-reveal>
+          Where I've been
+        </h2>
+
+        <ol class="relative border-l border-line pl-8 md:pl-12">
+          {
+            TIMELINE.map((job, i) => (
+              <li class="relative pb-14 last:pb-0" data-reveal style={`--reveal-delay:${i * 80}ms`}>
+                <span
+                  class:list={[
+                    'absolute -left-[calc(2rem+5px)] top-2 size-2.5 rounded-full md:-left-[calc(3rem+5px)]',
+                    job.current ? 'bg-accent pulse-dot' : 'bg-faint',
+                  ]}
+                  aria-hidden="true"
+                />
+
+                <p class="font-mono text-xs uppercase tracking-[0.14em] text-accent">
+                  {job.period}
+                </p>
+                <h3 class="mt-2.5 text-2xl md:text-[1.75rem]">{job.role}</h3>
+                <p class="mt-1.5 text-muted">
+                  {job.org} <span class="text-faint">· {job.place}</span>
+                </p>
+
+                <ul class="mt-5 space-y-2.5 text-[0.95rem] leading-relaxed text-muted">
+                  {job.points.map((point) => (
+                    <li class="flex gap-3">
+                      <span
+                        class="mt-[9px] size-1.5 shrink-0 rotate-45 bg-accent/60"
+                        aria-hidden="true"
+                      />
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ Skills ============ -->
+    <section class="section border-t border-line" aria-labelledby="skills-heading">
+      <div class="container-page">
+        <p class="eyebrow mb-5" data-reveal>// Toolkit</p>
+        <h2 id="skills-heading" class="mb-14 text-[clamp(2rem,5vw,3rem)]" data-reveal>
+          What I work with
+        </h2>
+
+        <div class="grid gap-px overflow-hidden rounded-xl border border-line bg-line md:grid-cols-2 lg:grid-cols-3">
+          {
+            SKILLS.map((group, i) => (
+              <div class="bg-bg p-7" data-reveal style={`--reveal-delay:${i * 70}ms`}>
+                <h3 class="font-mono text-[11px] uppercase tracking-[0.16em] text-accent">
+                  {group.group}
+                </h3>
+                <ul class="mt-4 flex flex-wrap gap-1.5">
+                  {group.items.map((item) => (
+                    <li class="tag">{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Education ============ -->
+    <section class="section border-t border-line" aria-labelledby="education-heading">
+      <div class="container-page">
+        <div class="grid gap-12 lg:grid-cols-[1fr_1.5fr] lg:gap-16">
+          <div data-reveal>
+            <p class="eyebrow mb-5">// Education</p>
+            <h2 id="education-heading" class="text-[clamp(2rem,5vw,3rem)]">Qualifications</h2>
+          </div>
+
+          <ul class="divide-y divide-[var(--border)] border-y border-line">
+            {
+              EDUCATION.map((item, i) => (
+                <li
+                  class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-6"
+                  data-reveal
+                  style={`--reveal-delay:${i * 80}ms`}
+                >
+                  <div>
+                    <h3 class="text-xl">{item.qualification}</h3>
+                    <p class="mt-1 text-muted">{item.school}</p>
+                  </div>
+                  <span class="font-mono text-sm text-accent">{item.year}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // "Download as PDF" prints the page. The print stylesheet strips the
+    // navigation, background and buttons, leaving a clean CV — which means the
+    // CV can never drift out of date relative to the site, and no PDF
+    // containing personal identifiers has to be hosted anywhere.
+    document.getElementById('print-cv')?.addEventListener('click', () => window.print());
+  </script>
+</BaseLayout>

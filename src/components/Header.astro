@@ -1,0 +1,188 @@
+---
+import { NAV, SITE } from '../consts';
+import ThemeToggle from './ThemeToggle.astro';
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
+---
+
+<a
+  href="#main"
+  class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:font-medium focus:text-accent-contrast"
+>
+  Skip to content
+</a>
+
+<header id="site-header" class="fixed inset-x-0 top-0 z-50 transition-all duration-300">
+  <div class="container-page">
+    <div
+      id="header-inner"
+      class="flex items-center justify-between gap-4 transition-all duration-300"
+      style="height: var(--header-h)"
+    >
+      <a href="/" class="group flex items-center gap-2.5" aria-label={`${SITE.name} — home`}>
+        <span
+          class="grid size-8 shrink-0 place-items-center rounded-md bg-accent font-mono text-[13px] font-bold text-accent-contrast transition-transform duration-300 group-hover:rotate-[-6deg]"
+          aria-hidden="true">JS</span
+        >
+        <span class="hidden text-[15px] font-semibold tracking-tight sm:block">
+          Jose Sebastian
+        </span>
+      </a>
+
+      <nav class="hidden md:block" aria-label="Main">
+        <ul class="flex items-center gap-1">
+          {
+            NAV.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  class:list={[
+                    'relative rounded-lg px-3 py-2 text-sm transition-colors',
+                    isActive(item.href) ? 'text-accent' : 'text-muted hover:text-ink',
+                  ]}
+                  aria-current={isActive(item.href) ? 'page' : undefined}
+                >
+                  {item.label}
+                  {isActive(item.href) && (
+                    <span class="absolute inset-x-3 -bottom-px h-px bg-accent" aria-hidden="true" />
+                  )}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <ThemeToggle />
+        <a href="/contact" class="btn btn-primary hidden !py-2.5 !text-[13px] sm:inline-flex">
+          Start a project
+        </a>
+        <button
+          type="button"
+          id="menu-toggle"
+          class="grid size-9 place-items-center rounded-lg border border-line text-muted transition hover:border-accent hover:text-accent md:hidden"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll progress: a hairline that fills as you read. -->
+  <div class="relative h-px w-full bg-line" aria-hidden="true">
+    <div
+      id="scroll-progress"
+      class="h-full origin-left bg-accent"
+      style="transform: scaleX(0)"
+    >
+    </div>
+  </div>
+</header>
+
+<!-- Mobile menu -->
+<div
+  id="mobile-menu"
+  class="fixed inset-0 z-40 hidden bg-bg/95 backdrop-blur-xl md:hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Site menu"
+>
+  <div class="container-page flex h-full flex-col pt-[calc(var(--header-h)+2rem)] pb-10">
+    <nav aria-label="Mobile">
+      <ul class="flex flex-col gap-1">
+        {
+          NAV.map((item, i) => (
+            <li>
+              <a
+                href={item.href}
+                class:list={[
+                  'block border-b border-line py-4 font-display text-3xl transition-colors',
+                  isActive(item.href) ? 'text-accent' : 'hover:text-accent',
+                ]}
+                style={`--reveal-delay:${i * 40}ms`}
+              >
+                <span class="mr-3 font-mono text-xs text-faint">0{i + 1}</span>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <a href="/contact" class="btn btn-primary mt-auto w-full !py-4">Start a project</a>
+  </div>
+</div>
+
+<script>
+  // --- sticky header condense ---
+  const header = document.getElementById('site-header');
+  const inner = document.getElementById('header-inner');
+  const bar = document.getElementById('scroll-progress');
+
+  let ticking = false;
+
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      ticking = false;
+      const y = window.scrollY;
+
+      if (y > 12) {
+        header?.classList.add('is-stuck');
+        inner?.style.setProperty('height', '3.75rem');
+      } else {
+        header?.classList.remove('is-stuck');
+        inner?.style.removeProperty('height');
+      }
+
+      if (bar) {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = max > 0 ? Math.min(1, y / max) : 0;
+        bar.style.transform = `scaleX(${pct})`;
+      }
+    });
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // --- mobile menu ---
+  const toggle = document.getElementById('menu-toggle');
+  const menu = document.getElementById('mobile-menu');
+
+  const setMenu = (open: boolean) => {
+    menu?.classList.toggle('hidden', !open);
+    toggle?.setAttribute('aria-expanded', String(open));
+    toggle?.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    document.body.style.overflow = open ? 'hidden' : '';
+  };
+
+  toggle?.addEventListener('click', () => {
+    setMenu(menu?.classList.contains('hidden') ?? true);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !menu?.classList.contains('hidden')) setMenu(false);
+  });
+
+  menu?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
+</script>
+
+<style>
+  #site-header.is-stuck {
+    background: color-mix(in oklab, var(--bg) 82%, transparent);
+    backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid var(--border);
+  }
+  #scroll-progress {
+    transition: transform 0.1s linear;
+  }
+</style>

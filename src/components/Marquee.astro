@@ -1,0 +1,34 @@
+---
+import { STACK } from '../consts';
+
+// Duplicated once so the -50% translation loops seamlessly.
+const items = [...STACK, ...STACK];
+---
+
+<div class="marquee relative overflow-hidden border-y border-line py-5" aria-label="Tools and platforms I work with">
+  <div class="marquee-track gap-10" aria-hidden="true">
+    {
+      items.map((item) => (
+        <span class="flex shrink-0 items-center gap-10 font-mono text-sm text-faint transition-colors">
+          {item}
+          <span class="size-1 rotate-45 bg-accent/50" />
+        </span>
+      ))
+    }
+  </div>
+
+  <!-- Text version for assistive tech, since the visual track is duplicated. -->
+  <p class="sr-only">{STACK.join(', ')}</p>
+
+  <!-- Edge fades -->
+  <div
+    class="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-bg to-transparent"
+    aria-hidden="true"
+  >
+  </div>
+  <div
+    class="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-bg to-transparent"
+    aria-hidden="true"
+  >
+  </div>
+</div>

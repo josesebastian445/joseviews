@@ -1,0 +1,141 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactForm from '../components/ContactForm.astro';
+import { SITE, CONTACT } from '../consts';
+
+const whatsappHref = `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(CONTACT.whatsappMessage)}`;
+
+const CHANNELS = [
+  {
+    label: 'WhatsApp',
+    value: CONTACT.phoneDisplay,
+    href: whatsappHref,
+    note: 'Fastest. Good for quick questions.',
+    external: true,
+  },
+  {
+    label: 'Email',
+    value: CONTACT.email,
+    href: `mailto:${CONTACT.email}`,
+    note: 'Best for detailed briefs and documents.',
+    external: false,
+  },
+  {
+    label: 'Phone',
+    value: CONTACT.phoneDisplay,
+    href: `tel:${CONTACT.phone}`,
+    note: 'Sun–Thu, 9am–7pm Dubai time.',
+    external: false,
+  },
+];
+
+const schema = [
+  {
+    '@type': 'ContactPage',
+    name: 'Contact Jose Sebastian',
+    url: `${SITE.url}/contact`,
+    mainEntity: { '@id': `${SITE.url}/#person` },
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.url },
+      { '@type': 'ListItem', position: 2, name: 'Contact', item: `${SITE.url}/contact` },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="Contact"
+  description="Tell me what you're trying to achieve and I'll come back with an honest read on scope, timeline and cost. Based in Dubai, working with clients worldwide."
+  image="/og/page/contact.png"
+  schema={schema}
+>
+  <header class="container-page pt-16 md:pt-24">
+    <div class="max-w-3xl">
+      <p class="eyebrow mb-5" data-reveal>// Contact</p>
+      <h1 class="text-[clamp(2.5rem,7vw,4.5rem)]" data-reveal>
+        Tell me what's<br /><span class="text-accent">actually the problem.</span>
+      </h1>
+      <p class="mt-6 text-lg leading-relaxed text-muted" data-reveal style="--reveal-delay:100ms">
+        Not "we need a website" — what's going wrong, or what you're trying to make
+        happen. I'll reply with an honest read on scope, timeline and cost, including
+        if the answer is that you don't need me.
+      </p>
+    </div>
+  </header>
+
+  <div class="container-page section">
+    <div class="grid gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
+      <!-- Form -->
+      <div class="card p-7 md:p-9" data-reveal>
+        <ContactForm />
+      </div>
+
+      <!-- Direct channels + expectations -->
+      <aside class="space-y-6" data-reveal style="--reveal-delay:120ms">
+        <div class="card p-7">
+          <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-faint">
+            Or reach me directly
+          </p>
+          <ul class="mt-5 space-y-5">
+            {
+              CHANNELS.map((channel) => (
+                <li>
+                  <a
+                    href={channel.href}
+                    target={channel.external ? '_blank' : undefined}
+                    rel={channel.external ? 'noopener noreferrer' : undefined}
+                    class="group block"
+                  >
+                    <span class="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">
+                      {channel.label}
+                    </span>
+                    <span class="mt-1 block break-all font-medium transition-colors group-hover:text-accent">
+                      {channel.value}
+                    </span>
+                    <span class="mt-0.5 block text-sm text-muted">{channel.note}</span>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+
+          <a href={whatsappHref} target="_blank" rel="noopener noreferrer" class="btn btn-primary mt-6 w-full !py-3.5">
+            Open WhatsApp
+          </a>
+        </div>
+
+        <div class="card p-7">
+          <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-faint">
+            What happens next
+          </p>
+          <ol class="mt-5 space-y-4 text-sm">
+            {
+              [
+                'I read it properly and reply within a few hours during Dubai working hours.',
+                'If it looks like a fit, we have a short call — 20 minutes, no pitch.',
+                'You get a written scope with a fixed price and a timeline before anything starts.',
+              ].map((step, i) => (
+                <li class="flex gap-3.5">
+                  <span class="font-mono text-xs text-accent">0{i + 1}</span>
+                  <span class="text-muted">{step}</span>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+
+        <div class="card p-7">
+          <p class="font-mono text-[11px] uppercase tracking-[0.16em] text-faint">Based in</p>
+          <p class="mt-3 text-lg">{SITE.city}, {SITE.countryName}</p>
+          <p class="mt-2 text-sm leading-relaxed text-muted">
+            Available in person for Dubai clients, and working remotely with clients
+            internationally — which has been most of my career.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>

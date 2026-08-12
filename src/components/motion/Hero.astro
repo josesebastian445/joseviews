@@ -1,0 +1,241 @@
+---
+import { ROTATING_WORDS, STATS, SITE, CONTACT } from '../../consts';
+
+// The headline is split into words at build time so each can be masked and
+// staggered. It stays plain server-rendered text — it is the LCP element and
+// nothing may gate it. Only transform/opacity animate, so CLS is 0.
+const HEADLINE = ['Websites', 'that', 'load', 'fast,', 'rank', 'high', 'and', 'stay', 'up.'];
+const ACCENT_WORDS = new Set(['rank', 'high']);
+
+const STACK_TILES = [
+  { label: 'WP', title: 'WordPress' },
+  { label: 'Next', title: 'Next.js' },
+  { label: 'Astro', title: 'Astro' },
+  { label: 'React', title: 'React' },
+  { label: 'SEO', title: 'Search optimisation' },
+  { label: 'CF', title: 'Cloudflare' },
+];
+---
+
+<section class="relative overflow-hidden pb-20 pt-10 md:pb-28 md:pt-16" aria-labelledby="hero-title">
+  <div class="container-page">
+    <div class="grid items-center gap-12 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
+      <!-- ============ Left: the identity stack ============ -->
+      <div>
+        <!-- Terminal card, decorative: it sits beside the headline rather than
+             gating it, so it can never delay first paint. -->
+        <div
+          class="card mb-8 inline-block max-w-full px-4 py-3 font-mono text-[13px] leading-relaxed"
+          data-terminal
+          aria-hidden="true"
+        >
+          <div class="mb-2 flex gap-1.5">
+            <span class="size-2.5 rounded-full bg-[#ff5f57]"></span>
+            <span class="size-2.5 rounded-full bg-[#febc2e]"></span>
+            <span class="size-2.5 rounded-full bg-[#28c840]"></span>
+          </div>
+          <p class="text-faint">
+            <span class="text-accent">~</span> <span class="text-muted">$</span> whoami
+          </p>
+          <p class="text-ink" data-line="Jose Sebastian — IT Manager &amp; Web Developer">
+            Jose Sebastian — IT Manager &amp; Web Developer
+          </p>
+          <p class="text-muted" data-line="7+ yrs · Dubai, UAE · status: available">
+            7+ yrs · Dubai, UAE · status: available
+          </p>
+        </div>
+
+        <!-- Screen-reader copy of the terminal content, since the card above is
+             decorative and hidden from the accessibility tree. -->
+        <p class="sr-only">
+          Jose Sebastian, IT Manager and Web Developer with over 7 years of experience,
+          based in Dubai, UAE, and currently available for projects.
+        </p>
+
+        <h1
+          id="hero-title"
+          class="text-[clamp(2.6rem,7.5vw,5.25rem)] leading-[0.98] tracking-tight"
+        >
+          {
+            HEADLINE.map((word, i) => (
+              <>
+                <span class="word-mask">
+                  <span
+                    style={`--word-delay:${120 + i * 55}ms`}
+                    class:list={[ACCENT_WORDS.has(word) && 'text-accent']}
+                  >
+                    {word}
+                  </span>
+                </span>{' '}
+              </>
+            ))
+          }
+        </h1>
+
+        <p class="mt-6 max-w-xl text-[1.05rem] leading-relaxed text-muted" data-reveal style="--reveal-delay:600ms">
+          I'm Jose — an IT Manager and web developer in {SITE.city}. For seven years I've
+          built and maintained business websites end to end: the build, the hosting, the
+          security, and the SEO that actually brings in enquiries.
+        </p>
+
+        <!-- Typewriter subline -->
+        <p
+          class="mt-5 font-mono text-sm text-faint"
+          data-typewriter={JSON.stringify(ROTATING_WORDS)}
+          data-reveal
+          style="--reveal-delay:680ms"
+        >
+          <span class="text-accent">&gt;</span> working in{' '}
+          <span class="text-ink caret" data-typewriter-out>WordPress</span>
+        </p>
+
+        <!-- CTAs -->
+        <div class="mt-9 flex flex-wrap items-center gap-3" data-reveal style="--reveal-delay:760ms">
+          <a href="/contact" class="btn btn-primary !px-6 !py-3.5" data-magnetic="0.3">
+            Start a project
+            <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6"></path>
+            </svg>
+          </a>
+          <a href="/work" class="btn btn-ghost !px-6 !py-3.5" data-magnetic="0.22">
+            See the work
+          </a>
+        </div>
+
+        <!-- Trust strip -->
+        <dl class="mt-12 flex flex-wrap gap-x-10 gap-y-6" data-reveal style="--reveal-delay:840ms">
+          {
+            STATS.map((stat) => (
+              <div>
+                <dt class="sr-only">{stat.label}</dt>
+                <dd class="font-display text-[2.1rem] leading-none">
+                  <span data-countup={stat.value}>0</span>
+                  <span class="text-accent">{stat.suffix}</span>
+                </dd>
+                <p class="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-faint">
+                  {stat.label}
+                </p>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+
+      <!-- ============ Right: live status card ============ -->
+      <aside class="lg:justify-self-end" data-reveal style="--reveal-delay:420ms">
+        <div class="card tilt w-full max-w-sm p-6" data-tilt="5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="pulse-dot relative size-2.5 rounded-full bg-accent" aria-hidden="true"></span>
+              <span class="text-sm font-medium">Available for projects</span>
+            </div>
+            <span class="font-mono text-xs text-faint">
+              <span data-clock>--:--</span> GST
+            </span>
+          </div>
+
+          <hr class="my-5 border-line" />
+
+          <dl class="space-y-3.5 text-sm">
+            <div class="flex justify-between gap-4">
+              <dt class="text-muted">Based in</dt>
+              <dd class="font-medium">{SITE.city}, UAE</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-muted">Focus</dt>
+              <dd class="text-right font-medium">Web build · SEO · IT</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-muted">Response time</dt>
+              <dd class="font-medium">Within a few hours</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-muted">Engagements</dt>
+              <dd class="text-right font-medium">Project · Retainer</dd>
+            </div>
+          </dl>
+
+          <hr class="my-5 border-line" />
+
+          <p class="mb-3 font-mono text-[11px] uppercase tracking-[0.16em] text-faint">
+            Day-to-day stack
+          </p>
+          <ul class="grid grid-cols-3 gap-2">
+            {
+              STACK_TILES.map((tile) => (
+                <li>
+                  <span
+                    class="tilt grid h-12 place-items-center rounded-lg border border-line bg-surface-2/60 font-mono text-[11px] text-muted transition-colors hover:border-accent hover:text-accent"
+                    data-tilt="14"
+                    title={tile.title}
+                  >
+                    {tile.label}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+
+          <a
+            href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(CONTACT.whatsappMessage)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-ghost mt-5 w-full !py-3 !text-[13px]"
+          >
+            Quick question? WhatsApp me
+          </a>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Watched by the canvas engine: once this leaves the viewport the
+       background drops to low-power mode. -->
+  <div id="hero-sentinel" class="pointer-events-none absolute bottom-0 h-px w-full"></div>
+
+  <!-- Scroll cue -->
+  <div
+    class="mt-14 flex justify-center md:mt-4"
+    aria-hidden="true"
+    data-reveal
+    style="--reveal-delay:1000ms"
+  >
+    <span class="scroll-cue font-mono text-[11px] uppercase tracking-[0.2em] text-faint">
+      Scroll
+    </span>
+  </div>
+</section>
+
+<style>
+  .scroll-cue {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .scroll-cue::after {
+    content: '';
+    width: 1px;
+    height: 2.5rem;
+    background: linear-gradient(var(--accent), transparent);
+    animation: cue 2.4s ease-in-out infinite;
+  }
+  @keyframes cue {
+    0%,
+    100% {
+      transform: scaleY(0.35);
+      transform-origin: top;
+      opacity: 0.4;
+    }
+    50% {
+      transform: scaleY(1);
+      transform-origin: top;
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-cue::after {
+      animation: none;
+    }
+  }
+</style>

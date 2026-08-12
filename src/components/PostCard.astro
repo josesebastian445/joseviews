@@ -1,0 +1,89 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import FormattedDate from './FormattedDate.astro';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  index?: number;
+  compact?: boolean;
+}
+
+const { post, index = 0, compact = false } = Astro.props;
+const { title, description, pubDate, heroImage, heroAlt, tags } = post.data;
+---
+
+<article
+  class="group relative flex flex-col"
+  data-reveal
+  style={`--reveal-delay:${index * 80}ms`}
+>
+  <a href={`/blog/${post.id}`} class="flex h-full flex-col">
+    {
+      !compact && (
+        <div class="relative mb-5 aspect-[16/10] overflow-hidden rounded-xl border border-line bg-surface-2">
+          {heroImage ? (
+            <Image
+              src={heroImage}
+              alt={heroAlt ?? ''}
+              widths={[400, 700, 1000]}
+              sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw"
+              class="size-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+              loading={index < 3 ? 'eager' : 'lazy'}
+            />
+          ) : (
+            /* No hero image: a generated pattern beats an empty grey box. */
+            <div
+              class="size-full opacity-60 transition-opacity duration-500 group-hover:opacity-100"
+              style="background-image: radial-gradient(var(--accent) 1px, transparent 1px); background-size: 16px 16px; mask-image: radial-gradient(ellipse 70% 70% at 30% 30%, #000, transparent 75%);"
+              aria-hidden="true"
+            />
+          )}
+        </div>
+      )
+    }
+
+    <div class="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.12em] text-faint">
+      <FormattedDate date={pubDate} />
+      {tags[0] && (
+        <>
+          <span aria-hidden="true">·</span>
+          <span class="text-accent">{tags[0]}</span>
+        </>
+      )}
+    </div>
+
+    <h3
+      class:list={[
+        'mt-3 leading-snug transition-colors duration-300 group-hover:text-accent',
+        compact ? 'text-lg' : 'text-[1.45rem]',
+      ]}
+    >
+      {title}
+    </h3>
+
+    {
+      !compact && (
+        <p class="mt-2.5 line-clamp-2 text-[0.95rem] leading-relaxed text-muted">{description}</p>
+      )
+    }
+
+    <span
+      class="mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-muted transition-colors group-hover:text-accent"
+    >
+      Read
+      <svg
+        viewBox="0 0 24 24"
+        class="size-3.5 transition-transform duration-300 group-hover:translate-x-1"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M5 12h14M13 6l6 6-6 6" />
+      </svg>
+    </span>
+  </a>
+</article>
