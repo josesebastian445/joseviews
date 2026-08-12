@@ -71,8 +71,9 @@ const STATIC_PAGES: Record<string, { title: string; description: string; kind: s
 
 Object.assign(pages, STATIC_PAGES);
 
-export const { getStaticPaths, GET } = OGImageRoute({
-  param: 'route',
+// astro-og-canvas 0.13 made OGImageRoute async and now derives the route
+// parameter from the filename, so there is no `param` option any more.
+export const { getStaticPaths, GET } = await OGImageRoute({
   pages,
   getImageOptions: (_path, page: (typeof pages)[string]) => ({
     title: page.title,

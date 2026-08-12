@@ -1,5 +1,8 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
+// Astro 7 deprecated re-exporting `z` from 'astro:content'; it now comes from
+// 'astro/zod', which guarantees the same zod instance Astro validates with.
+import { z } from 'astro/zod';
 
 /**
  * These schemas are the contract the CMS writes against. Every field here has
@@ -40,7 +43,8 @@ const work = defineCollection({
         .max(4)
         .default([]),
       year: z.string(),
-      url: z.string().url().optional(),
+      // zod 4 moved format validators to the top level: z.url(), not z.string().url()
+      url: z.url().optional(),
       order: z.number().default(99),
       featured: z.boolean().default(false),
       draft: z.boolean().default(false),

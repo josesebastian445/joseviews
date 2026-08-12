@@ -4,7 +4,7 @@ Personal brand site for Jose Sebastian — IT Manager, web developer and SEO
 specialist in Dubai. Built to bring in client work and to be genuinely pleasant
 to publish to every week.
 
-**Stack:** Astro 5 (static) · Tailwind 4 · Sveltia CMS · Cloudflare Workers
+**Stack:** Astro 7 (static) · Tailwind 4 · Sveltia CMS · Cloudflare Workers
 
 ---
 
