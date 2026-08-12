@@ -1,15 +1,19 @@
 {
-  "name": "josesebastian-site",
+  "name": "joseviews",
   "type": "module",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
+    "preview": "astro build && wrangler dev",
+    "deploy": "astro build && wrangler deploy",
     "astro": "astro",
-    "check": "astro check",
+    "check": "astro check && tsc -p worker --noEmit",
     "brand": "node scripts/make-brand-assets.mjs"
   },
   "dependencies": {
@@ -27,13 +31,14 @@
     "canvaskit-wasm": "^0.39.1",
     "markdown-it": "^15.0.0",
     "sanitize-html": "^2.17.6",
-    "sharp": "^0.34.2",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
     "@cloudflare/workers-types": "^5.20260812.1",
     "typescript": "^5.8.3",
-    "vite": "^6.4.3"
+    "vite": "^6.4.3",
+    "wrangler": "^4.121.0"
   }
 }

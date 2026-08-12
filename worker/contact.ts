@@ -1,22 +1,23 @@
 /**
- * Cloudflare Pages Function — POST /api/contact
+ * Contact form handler.
  *
- * Runs on Cloudflare's edge alongside the static site. Because the site itself
- * is fully static, this is the only server-side code in the project.
+ * The site itself is fully static, so this is the only server-side code in the
+ * project. It runs on Cloudflare Workers alongside the static assets.
  *
- * Required environment variables (Cloudflare Pages → Settings → Variables):
- *   RESEND_API_KEY        — from resend.com, stored as a secret
- *   CONTACT_TO            — the inbox that receives enquiries
- *   CONTACT_FROM          — a verified sender on your Resend domain
- *   TURNSTILE_SECRET_KEY  — optional; enables bot verification
- *   RATE_LIMIT            — optional KV namespace binding for per-IP throttling
+ * Environment (Cloudflare dashboard → Settings → Variables and Secrets):
+ *   RESEND_API_KEY        — secret, from resend.com
+ *   CONTACT_TO            — inbox that receives enquiries
+ *   CONTACT_FROM          — verified sender on your Resend domain
+ *   TURNSTILE_SECRET_KEY  — optional secret; enables bot verification
+ *   RATE_LIMIT            — optional KV binding for per-IP throttling
  *
- * If the mail credentials are absent the function fails loudly rather than
- * silently accepting submissions that go nowhere — a form that says "sent"
- * while dropping the message is the worst possible failure mode.
+ * If the mail credentials are absent this fails loudly rather than silently
+ * accepting submissions that go nowhere — a form that says "sent" while
+ * dropping the message is the worst possible failure mode.
  */
 
-interface Env {
+export interface Env {
+  ASSETS: Fetcher;
   RESEND_API_KEY?: string;
   CONTACT_TO?: string;
   CONTACT_FROM?: string;
@@ -30,7 +31,7 @@ const RATE_MAX = 5;
 
 /**
  * C0/C1 control characters, minus tab, newline and carriage return so that
- * multi-line messages survive intact. Built from a string so the source file
+ * multi-line messages survive intact. Built from a string so this source file
  * never contains literal control bytes.
  */
 const CONTROL_CHARS = new RegExp(
@@ -45,8 +46,12 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-/** Strips control characters and caps length so nothing odd reaches the email. */
-function clean(value: FormDataEntryValue | null, max = MAX_FIELD): string {
+/**
+ * Strips control characters and caps length so nothing odd reaches the email.
+ * Takes `unknown` because a FormData entry may be a File, and the workers-types
+ * lib does not ship the DOM's FormDataEntryValue alias.
+ */
+function clean(value: unknown, max = MAX_FIELD): string {
   if (typeof value !== 'string') return '';
   return value.replace(CONTROL_CHARS, '').trim().slice(0, max);
 }
@@ -78,8 +83,11 @@ async function verifyTurnstile(token: string, secret: string, ip: string): Promi
   return data.success === true;
 }
 
-export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
+export async function handleContact(request: Request, env: Env): Promise<Response> {
+  if (request.method !== 'POST') {
+    return json({ error: 'Method not allowed.' }, 405);
+  }
+
   const ip = request.headers.get('CF-Connecting-IP') ?? '';
 
   let form: FormData;
@@ -150,7 +158,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
   const html = `
     <div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px">
-      <h2 style="margin:0 0 16px">New enquiry from your website</h2>
+      <h2 style="margin:0 0 16px">New enquiry from joseviews.com</h2>
       <table style="border-collapse:collapse;width:100%;font-size:14px">
         ${rows
           .map(
@@ -184,4 +192,4 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   return json({ ok: true });
-};
+}

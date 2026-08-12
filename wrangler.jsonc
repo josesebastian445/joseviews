@@ -1,0 +1,42 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "joseviews",
+  // Must not exceed the date supported by the installed workerd binary, or
+  // `wrangler dev` refuses to start. Bump it alongside wrangler upgrades.
+  "compatibility_date": "2026-08-11",
+
+  // The site is fully static. Astro must NOT get the Cloudflare SSR adapter:
+  // the OG-image generator uses CanvasKit and node:fs, which are build-time
+  // tools and cannot be bundled into a Worker. Keeping this file in the repo
+  // is what stops `wrangler deploy` from auto-running `astro add cloudflare`
+  // and silently switching the project to server mode.
+  "main": "worker/index.ts",
+
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+
+    // Must match the canonical URLs the site emits, which have no trailing
+    // slash. The default ("auto-trailing-slash") 307-redirects /blog to /blog/,
+    // so every internal link would cost a round trip and land on a URL that
+    // contradicts its own canonical tag.
+    "html_handling": "drop-trailing-slash",
+
+    // Serves dist/404.html for unknown paths.
+    "not_found_handling": "404-page",
+    // Only /api/* reaches the Worker. Every other request is served straight
+    // from the edge cache without a Worker invocation.
+    "run_worker_first": ["/api/*"]
+  },
+
+  "observability": {
+    "enabled": true
+  }
+
+  // Secrets and vars are set in the Cloudflare dashboard, never here:
+  //   RESEND_API_KEY (secret), CONTACT_TO, CONTACT_FROM,
+  //   TURNSTILE_SECRET_KEY (optional secret)
+  //
+  // Optional per-IP rate limiting — create a KV namespace, then add:
+  // "kv_namespaces": [{ "binding": "RATE_LIMIT", "id": "<namespace-id>" }]
+}

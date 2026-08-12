@@ -36,35 +36,59 @@ git remote add origin https://github.com/josesebastian445/joseviews.git
 git push -u origin main
 ```
 
-The repo can be private. Cloudflare Pages and the CMS both work with private
-repos.
+The repo can be private. Cloudflare Workers Builds and the CMS both work with
+private repos.
 
 ---
 
-## 2. Connect Cloudflare Pages
+## 2. Cloudflare Workers
 
-1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** →
-   **Connect to Git**.
-2. Pick the repository.
-3. Build settings:
+The project deploys as a **Worker with static assets**, configured by
+`wrangler.jsonc` in the repo root.
 
-   | Setting | Value |
-   |---|---|
-   | Framework preset | Astro |
-   | Build command | `npm run build` |
-   | Output directory | `dist` |
-   | Node version | `22` (set env var `NODE_VERSION=22`) |
+| Setting | Value |
+|---|---|
+| Build command | `npm run build` |
+| Deploy command | `npx wrangler deploy` |
+| Worker name | `joseviews` (from `wrangler.jsonc`) |
 
-4. **Save and Deploy.**
+Every push to `main` deploys automatically — including the commits the CMS makes
+when you publish a post.
 
-Every push to `main` now deploys automatically — including the commits the CMS
-makes when you publish a post.
+### Why `wrangler.jsonc` must stay in the repo
+
+Without it, `wrangler deploy` tries to auto-configure the project and runs
+`astro add cloudflare`, which switches the site from `mode: "static"` to
+`mode: "server"`. That breaks the build, because the OG-image generator uses
+CanvasKit and `node:fs` — build-time tools that cannot be bundled into a Worker.
+You will see warnings like:
+
+```
+[adapter] Cloudflare does not support sharp at runtime
+[vite] Automatically externalized node built-in "node:fs/promises" from astro-og-canvas
+```
+
+If you ever see those, `wrangler.jsonc` has gone missing or been renamed.
+
+**Do not add the Astro Cloudflare adapter.** This site is 100% static; there is
+nothing to render at request time. The only server-side code is `worker/`, which
+handles the contact form.
+
+### How requests are routed
+
+`run_worker_first: ["/api/*"]` means only API calls reach the Worker. Every page
+view is served straight from Cloudflare's edge with no Worker invocation, so
+page traffic costs nothing and cannot be slowed by Worker cold starts.
+
+`html_handling: "drop-trailing-slash"` matches the canonical URLs the site emits.
+The default would 307-redirect `/blog` to `/blog/`, putting a redirect hop on
+every internal link and serving a URL that contradicts its own canonical tag.
 
 ---
 
 ## 3. Custom domain
 
-Pages project → **Custom domains** → **Set up a domain**.
+Worker → **Settings → Domains & Routes** → **Add** → **Custom domain**.
 
 If the domain's nameservers already point at Cloudflare, the DNS record is
 created for you. Otherwise move the nameservers first — it's worth it, since the
@@ -74,13 +98,13 @@ same account then covers DNS, CDN, WAF and analytics.
 
 ## 4. Contact form
 
-The form posts to a Pages Function at `/api/contact`, which sends via
+The form posts to `/api/contact`, handled by `worker/contact.ts`, which sends via
 [Resend](https://resend.com) (free tier: 3,000 emails/month, ample here).
 
 1. Create a Resend account and **verify your domain** — this is what lets mail
    come from `hi@joseviews.com` rather than landing in spam.
 2. Create an API key.
-3. Pages project → **Settings → Variables and Secrets**, add:
+3. Worker → **Settings → Variables and Secrets**, add:
 
    | Name | Type | Value |
    |---|---|---|
@@ -101,7 +125,7 @@ silently dropping messages is far worse than one that admits it isn't wired up.
 ### Optional: bot protection
 
 1. Cloudflare → **Turnstile** → create a widget for your domain.
-2. Add `TURNSTILE_SECRET_KEY` as a secret in Pages.
+2. Add `TURNSTILE_SECRET_KEY` as a secret on the Worker.
 3. Add `PUBLIC_TURNSTILE_SITE_KEY` as a **build-time** environment variable.
 4. Redeploy.
 
@@ -110,9 +134,14 @@ without this.
 
 ### Optional: rate limiting
 
-Create a KV namespace and bind it to the Pages project as `RATE_LIMIT`. That caps
-each IP at 5 submissions per 15 minutes. Without the binding, the honeypot and
-Turnstile still apply.
+Create a KV namespace, then add the binding to `wrangler.jsonc`:
+
+```jsonc
+"kv_namespaces": [{ "binding": "RATE_LIMIT", "id": "<namespace-id>" }]
+```
+
+That caps each IP at 5 submissions per 15 minutes. Without the binding, the
+honeypot and Turnstile still apply.
 
 ---
 
@@ -174,7 +203,7 @@ parts; you re-enter the token when it expires.
 
 ## 6. Analytics
 
-Cloudflare Pages project → **Analytics → Web Analytics → Enable**.
+Cloudflare dashboard → **Web Analytics** → add `joseviews.com`.
 
 Free, cookieless, and requires no consent banner — which also means it doesn't
 drag down Core Web Vitals the way GA4 does. If you also want GA4, add it via
@@ -214,13 +243,16 @@ npm run dev                     # in another, then open /admin
 
 `local_backend: true` is already set in the config.
 
-To test the contact form locally you need the Pages runtime, since Astro's dev
-server doesn't run Functions:
+`astro dev` does not run the Worker, so the contact form 404s there. To exercise
+the real thing — Worker routing, `_headers`, 404 handling and the contact API —
+run the Workers runtime locally:
 
 ```bash
-npm run build
-npx wrangler pages dev dist
+npm run preview      # astro build && wrangler dev  →  http://localhost:8787
 ```
+
+This is the runtime that actually serves production, so anything that works here
+works deployed.
 
 ---
 
