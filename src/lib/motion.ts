@@ -37,7 +37,11 @@ export function initTerminal() {
     const lines = Array.from(root.querySelectorAll<HTMLElement>('[data-line]'));
     if (!lines.length) return;
 
-    if (REDUCED()) {
+    // Typing 86 characters takes ~2.5s of continuous change in the hero. On a
+    // phone that is the single largest contributor to Speed Index, and nobody
+    // is watching a decorative terminal type itself out on a small screen — so
+    // render it immediately there and keep the effect for desktop.
+    if (REDUCED() || !FINE_POINTER()) {
       lines.forEach((l) => {
         l.style.visibility = 'visible';
         l.classList.remove('caret');

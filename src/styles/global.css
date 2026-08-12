@@ -437,7 +437,9 @@
   width: 100%;
   height: 100%;
   opacity: 0;
-  transition: opacity 1.2s ease-out;
+  /* Short: a full-viewport element fading for over a second is a large, late
+     visual change, and Speed Index counts every frame of it. */
+  transition: opacity 0.5s ease-out;
 }
 .bg-canvas[data-ready] {
   opacity: 1;
