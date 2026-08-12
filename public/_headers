@@ -32,8 +32,19 @@
   Cache-Control: public, max-age=3600
   Content-Type: application/rss+xml; charset=utf-8
 
-# The CMS loads its bundle from unpkg and talks to the GitHub API, so it needs
-# a looser policy than the rest of the site. It is noindexed and behind auth.
+# The CMS talks to the GitHub API and evaluates its own bundle, so it needs a
+# looser policy than the rest of the site. It is noindexed and behind auth.
+#
+# BOTH rules are required. `html_handling: "drop-trailing-slash"` makes /admin
+# the canonical URL, and `/admin/*` does NOT match `/admin` itself — so without
+# the exact-path rule the page falls back to the site-wide policy, the CMS
+# bundle is blocked, and the editor never loads.
+/admin
+  X-Robots-Tag: noindex, nofollow
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.workers.dev; worker-src 'self' blob:; frame-src 'self'
+
 /admin/*
   X-Robots-Tag: noindex, nofollow
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https:; font-src 'self' data: https://unpkg.com; connect-src 'self' https://api.github.com https://unpkg.com https://*.workers.dev; frame-src 'self'
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://api.github.com https://*.githubusercontent.com https://*.workers.dev; worker-src 'self' blob:; frame-src 'self'

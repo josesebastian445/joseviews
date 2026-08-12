@@ -36,8 +36,12 @@
     </div>
 
     <!-- Sveltia CMS: a drop-in, actively maintained replacement for Decap CMS
-         that reads the same config.yml format. Loaded from CDN and pinned to a
-         major version so a breaking release cannot take publishing offline. -->
-    <script src="https://unpkg.com/@sveltia/cms@0/dist/sveltia-cms.js" type="module"></script>
+         that reads the same config.yml format.
+
+         Served from our own origin rather than a CDN — copied out of
+         node_modules by scripts/copy-cms.mjs during the build. That pins the
+         version to the lockfile, keeps publishing working if unpkg is down,
+         and means the Content-Security-Policy needs no external script origin. -->
+    <script src="/admin/sveltia-cms.js" type="module"></script>
   </body>
 </html>
