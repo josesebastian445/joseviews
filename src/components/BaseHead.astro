@@ -2,11 +2,12 @@
 import { SITE, CONTACT, SOCIAL, OG_DEFAULT } from '../consts';
 import '../styles/global.css';
 
-// Preload only the two latin subsets that render above the fold. Importing
-// with ?url gives us the hashed build filename, so the preload can never point
-// at a stale asset. The other subsets stay in the bundle but are never fetched.
+// Preload ONLY the display font — it renders the <h1>, which is the LCP
+// element on every page. Inter is deliberately not preloaded: preloads fetch at
+// highest priority and compete with the render-blocking stylesheet, and with
+// font-display:swap the body text paints in the fallback regardless. Preloading
+// both measurably delayed First Contentful Paint on throttled mobile.
 import displayFont from '@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2?url';
-import bodyFont from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 
 interface Props {
   title: string;
@@ -88,7 +89,6 @@ const jsonLd = {
 <meta name="generator" content={Astro.generator} />
 
 <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin="anonymous" />
-<link rel="preload" href={bodyFont} as="font" type="font/woff2" crossorigin="anonymous" />
 
 <title>{fullTitle}</title>
 <meta name="description" content={description} />

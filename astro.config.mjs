@@ -38,6 +38,10 @@ export default defineConfig({
   },
   prefetch: {
     prefetchAll: true,
-    defaultStrategy: 'viewport',
+    // 'viewport' prefetched every link as it scrolled into view — around 25
+    // full HTML documents on the homepage alone, competing for bandwidth on
+    // mobile for pages most visitors never open. 'hover' (which also covers
+    // touchstart) keeps navigation feeling instant at a fraction of the cost.
+    defaultStrategy: 'hover',
   },
 });

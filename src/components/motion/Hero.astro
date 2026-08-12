@@ -61,7 +61,7 @@ const STACK_TILES = [
               <>
                 <span class="word-mask">
                   <span
-                    style={`--word-delay:${120 + i * 55}ms`}
+                    style={`--word-delay:${60 + i * 28}ms`}
                     class:list={[ACCENT_WORDS.has(word) && 'text-accent']}
                   >
                     {word}
@@ -72,7 +72,7 @@ const STACK_TILES = [
           }
         </h1>
 
-        <p class="mt-6 max-w-xl text-[1.05rem] leading-relaxed text-muted" data-reveal style="--reveal-delay:600ms">
+        <p class="mt-6 max-w-xl text-[1.05rem] leading-relaxed text-muted" data-reveal style="--reveal-delay:200ms">
           I'm Jose — an IT Manager and web developer in {SITE.city}. For seven years I've
           built and maintained business websites end to end: the build, the hosting, the
           security, and the SEO that actually brings in enquiries.
@@ -83,14 +83,14 @@ const STACK_TILES = [
           class="mt-5 font-mono text-sm text-faint"
           data-typewriter={JSON.stringify(ROTATING_WORDS)}
           data-reveal
-          style="--reveal-delay:680ms"
+          style="--reveal-delay:250ms"
         >
           <span class="text-accent">&gt;</span> working in{' '}
           <span class="text-ink caret" data-typewriter-out>WordPress</span>
         </p>
 
         <!-- CTAs -->
-        <div class="mt-9 flex flex-wrap items-center gap-3" data-reveal style="--reveal-delay:760ms">
+        <div class="mt-9 flex flex-wrap items-center gap-3" data-reveal style="--reveal-delay:300ms">
           <a href="/contact" class="btn btn-primary !px-6 !py-3.5" data-magnetic="0.3">
             Start a project
             <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -103,7 +103,7 @@ const STACK_TILES = [
         </div>
 
         <!-- Trust strip -->
-        <dl class="mt-12 flex flex-wrap gap-x-10 gap-y-6" data-reveal style="--reveal-delay:840ms">
+        <dl class="mt-12 flex flex-wrap gap-x-10 gap-y-6" data-reveal style="--reveal-delay:350ms">
           {
             STATS.map((stat) => (
               <div>
@@ -122,7 +122,7 @@ const STACK_TILES = [
       </div>
 
       <!-- ============ Right: live status card ============ -->
-      <aside class="lg:justify-self-end" data-reveal style="--reveal-delay:420ms">
+      <aside class="lg:justify-self-end" data-reveal style="--reveal-delay:160ms">
         <div class="card tilt w-full max-w-sm p-6" data-tilt="5">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2.5">
@@ -198,7 +198,7 @@ const STACK_TILES = [
     class="mt-14 flex justify-center md:mt-4"
     aria-hidden="true"
     data-reveal
-    style="--reveal-delay:1000ms"
+    style="--reveal-delay:420ms"
   >
     <span class="scroll-cue font-mono text-[11px] uppercase tracking-[0.2em] text-faint">
       Scroll
@@ -218,7 +218,10 @@ const STACK_TILES = [
     width: 1px;
     height: 2.5rem;
     background: linear-gradient(var(--accent), transparent);
-    animation: cue 2.4s ease-in-out infinite;
+    /* Finite: it is a hint to scroll, not a permanent animation. Anything
+       looping forever above the fold keeps Speed Index high and keeps the
+       compositor awake for no benefit. */
+    animation: cue 2.4s ease-in-out 5;
   }
   @keyframes cue {
     0%,

@@ -71,7 +71,7 @@ export function initTerminal() {
       if (ci < text.length) {
         line.textContent = text.slice(0, ++ci);
         // Slight jitter reads as typing rather than a machine ticker.
-        setTimeout(tick, 22 + Math.random() * 34);
+        setTimeout(tick, 14 + Math.random() * 20);
         return;
       }
 
@@ -82,7 +82,7 @@ export function initTerminal() {
       else lines[lines.length - 1].classList.add('caret');
     };
 
-    onceVisible(root, () => setTimeout(tick, 400), 0.15);
+    onceVisible(root, () => setTimeout(tick, 150), 0.15);
   });
 }
 
@@ -131,7 +131,7 @@ export function initTypewriter() {
       setTimeout(tick, delay);
     };
 
-    onceVisible(el, () => setTimeout(tick, 900), 0.1);
+    onceVisible(el, () => setTimeout(tick, 450), 0.1);
   });
 }
 
@@ -150,7 +150,7 @@ export function initCountUp() {
     }
 
     onceVisible(el, () => {
-      const duration = 1400;
+      const duration = 900;
       const start = performance.now();
 
       const step = (now: number) => {
