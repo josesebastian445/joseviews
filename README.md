@@ -1,56 +1,5 @@
 # josesebastian-site
 
-Personal brand site for Jose Sebastian — IT Manager, web developer and SEO
-specialist in Dubai. Built to bring in client work and to be genuinely pleasant
-to publish to every week.
-
-**Stack:** Astro 5 · Tailwind 4 · Sveltia CMS · Cloudflare Pages
-
----
-
-## Quick start
-
-```bash
-npm install
-npm run dev      # http://localhost:4321
-```
-
-| Command | What it does |
-|---|---|
-| `npm run dev` | Dev server, drafts visible |
-| `npm run build` | Production build into `dist/` |
-| `npm run preview` | Serve the built site |
-| `npm run check` | Type-check `.astro` and `.ts` |
-| `npm run brand` | Regenerate favicon and app icons from `scripts/make-brand-assets.mjs` |
-
-**Publishing a post?** See [CONTENT-GUIDE.md](CONTENT-GUIDE.md).
-**Deploying or configuring?** See [DEPLOYMENT.md](DEPLOYMENT.md).
-
----
-
-## Structure
-
-```
-src/
-  consts.ts              Site identity, contact details, nav — change these first
-  content.config.ts      Zod schemas; must stay in sync with public/admin/config.yml
-  content/               Markdown: blog, work, services, testimonials
-  components/
-    motion/              Hero + the Signal Field background
-  layouts/BaseLayout     Head, shell, theme, scroll reveal
-  lib/
-    signal-field.ts      The animated network background
-    motion.ts            Typewriter, count-up, magnetic buttons, tilt, clock
-    posts.ts             Shared post queries
-  pages/                 Routes
-  styles/global.css      Design tokens, background layers, print CV styles
-functions/api/contact.ts Cloudflare Pages Function for the contact form
-public/admin/            Sveltia CMS
-scripts/                 Brand asset generation
-```
-
----
-
 ## Design system
 
 Everything is driven by CSS custom properties in `src/styles/global.css`. To
@@ -108,10 +57,6 @@ Case-study metrics whose value is `TODO` are **hidden from visitors** and flagge
 in dev, so an unfinished case study is safe to publish and a placeholder can't
 quietly become permanent.
 
-Every schema field has a matching widget in `public/admin/config.yml`. If you add
-a field, add it in both places — drift there means the CMS writes files that fail
-the build.
-
 ---
 
 ## SEO
@@ -125,13 +70,3 @@ the build.
 - Reading time computed at build via a remark plugin
 
 ---
-
-## Privacy note
-
-The source CV contains a passport number, date of birth and home address. **None
-of it is in this repository or on the site**, and none of it should be added.
-The public contact surface is name, city, work email, phone/WhatsApp and GitHub.
-
-The downloadable CV is the `/about` page printed via the browser — see the
-`@media print` block in `global.css`. That keeps the CV permanently in sync with
-the site and means no document containing personal identifiers is ever hosted.
