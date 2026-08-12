@@ -1,7 +1,11 @@
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "worker"],
+  // `public` is excluded because allowJs + include:"**/*" would otherwise make
+  // TypeScript parse the 1.9 MB minified CMS bundle that scripts/copy-cms.mjs
+  // drops there, which exhausts the V8 heap and crashes `astro check`.
+  // Nothing in public/ is ours to type-check anyway.
+  "exclude": ["dist", "worker", "public"],
   "compilerOptions": {
     "strictNullChecks": true,
     "allowJs": true,
