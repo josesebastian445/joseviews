@@ -7,7 +7,7 @@ section, read [The weekly loop](#the-weekly-loop).
 
 ## The weekly loop
 
-1. Open **`https://yourdomain.com/admin`** and sign in with GitHub.
+1. Open **`https://joseviews.com/admin`** and sign in with GitHub.
 2. **Blog posts → New Blog post.**
 3. Fill in the title, meta description, date and tags. Write the post.
 4. Leave **Draft** on until you're happy. Toggle it off to publish.

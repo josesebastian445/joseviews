@@ -7,7 +7,14 @@ import { CONTACT } from '../consts';
 const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '';
 ---
 
-<form id="contact-form" method="POST" action="/api/contact" class="space-y-5" novalidate>
+<form
+  id="contact-form"
+  method="POST"
+  action="/api/contact"
+  class="space-y-5"
+  novalidate
+  data-fallback-email={CONTACT.email}
+>
   <!-- Honeypot: real people never fill this in. Hidden from AT as well. -->
   <div class="absolute left-[-9999px]" aria-hidden="true">
     <label for="company_website">Leave this field empty</label>
@@ -265,8 +272,11 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '';
       show("Thanks — that's with me. I'll reply within a few hours.", true);
       if (label) label.textContent = 'Message sent';
     } catch {
+      // Read the address off the form rather than hard-coding it, so changing
+      // CONTACT.email can never leave a stale address in the failure path.
+      const fallback = form.dataset.fallbackEmail ?? '';
       show(
-        'Something went wrong sending that. Please email iamjoseph.sebastian@gmail.com or message me on WhatsApp.',
+        `Something went wrong sending that. Please email ${fallback} or message me on WhatsApp.`,
         false
       );
       if (button) button.disabled = false;

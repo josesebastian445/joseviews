@@ -12,7 +12,8 @@
 
 backend:
   name: github
-  repo: josesebastian445/josesebastian-site # CHANGE: your-username/your-repo
+  # CHANGE: must match the GitHub repo you push this to.
+  repo: josesebastian445/joseviews
   branch: main
   # CHANGE: your deployed sveltia-cms-auth worker URL.
   # Remove this line entirely to fall back to personal-access-token login.
@@ -33,8 +34,8 @@ media_folder: src/assets/uploads
 public_folder: /src/assets/uploads
 
 publish_mode: simple
-site_url: https://josesebastian.com # CHANGE to your domain
-display_url: https://josesebastian.com # CHANGE to your domain
+site_url: https://joseviews.com
+display_url: https://joseviews.com
 logo_url: /icon-512.png
 
 collections:

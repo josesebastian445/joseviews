@@ -8,7 +8,7 @@
  */
 
 export const SITE = {
-  url: 'https://josesebastian.com',
+  url: 'https://joseviews.com',
   name: 'Jose Sebastian',
   title: 'Jose Sebastian — Web Developer & SEO Specialist in Dubai',
   tagline: 'IT Manager · Web Developer · SEO Specialist',
@@ -25,7 +25,7 @@ export const SITE = {
 } as const;
 
 export const CONTACT = {
-  email: 'iamjoseph.sebastian@gmail.com',
+  email: 'hi@joseviews.com',
   // E.164 for tel:/wa.me links, plus a display form.
   phone: '+971589202967',
   phoneDisplay: '+971 58 920 2967',

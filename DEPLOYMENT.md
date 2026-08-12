@@ -7,16 +7,21 @@ it waiting for DNS.
 
 ## 0. Before you start
 
-Decide the domain. It goes in **three** places and they must match:
+The domain is **joseviews.com** and the contact address is **hi@joseviews.com**.
+Both are already set in `src/consts.ts` and `public/admin/config.yml`.
 
-| File | Field |
-|---|---|
-| `src/consts.ts` | `SITE.url` |
-| `public/admin/config.yml` | `site_url`, `display_url` |
-| Cloudflare Pages | Custom domain |
+Everything else — canonical tags, sitemap, RSS, `robots.txt`, JSON-LD, the
+mailto links, the WhatsApp deep links — reads from those two constants, so if
+the domain ever changes again, `src/consts.ts` is the only file to edit.
 
-Everything else — canonical tags, sitemap, RSS, `robots.txt`, JSON-LD — reads
-from `SITE.url`, so there is nothing else to change.
+Two things still need creating before the site is fully live:
+
+- **The `hi@joseviews.com` mailbox.** Nothing on the site sends mail on its own;
+  this is where enquiries land and where people reply. Google Workspace, Zoho
+  Mail (free tier) or a Cloudflare Email Routing forward to an existing inbox all
+  work — Email Routing is free and takes about five minutes.
+- **The GitHub repository.** `public/admin/config.yml` currently expects
+  `josesebastian445/joseviews`; change it if you push somewhere else.
 
 ---
 
@@ -27,7 +32,7 @@ git init
 git add .
 git commit -m "Initial site"
 git branch -M main
-git remote add origin https://github.com/josesebastian445/josesebastian-site.git
+git remote add origin https://github.com/josesebastian445/joseviews.git
 git push -u origin main
 ```
 
@@ -73,15 +78,19 @@ The form posts to a Pages Function at `/api/contact`, which sends via
 [Resend](https://resend.com) (free tier: 3,000 emails/month, ample here).
 
 1. Create a Resend account and **verify your domain** — this is what lets mail
-   come from `hello@yourdomain.com` rather than landing in spam.
+   come from `hi@joseviews.com` rather than landing in spam.
 2. Create an API key.
 3. Pages project → **Settings → Variables and Secrets**, add:
 
    | Name | Type | Value |
    |---|---|---|
    | `RESEND_API_KEY` | Secret | `re_...` |
-   | `CONTACT_TO` | Plaintext | where enquiries should arrive |
-   | `CONTACT_FROM` | Plaintext | `Website <hello@yourdomain.com>` — must be on the verified domain |
+   | `CONTACT_TO` | Plaintext | `hi@joseviews.com` |
+   | `CONTACT_FROM` | Plaintext | `Joseviews <hi@joseviews.com>` — must be on the verified domain |
+
+   Note that `CONTACT_FROM` is the *sending* identity and `CONTACT_TO` is where
+   the enquiry lands. Using the same address for both is fine and keeps the
+   thread in one place.
 
 4. Redeploy.
 
@@ -126,7 +135,7 @@ GitHub → **Settings → Developer settings → OAuth Apps → New OAuth App**.
 | Field | Value |
 |---|---|
 | Application name | Anything, e.g. `Website CMS` |
-| Homepage URL | `https://yourdomain.com` |
+| Homepage URL | `https://joseviews.com` |
 | Authorization callback URL | `https://sveltia-cms-auth.<subdomain>.workers.dev/callback` |
 
 Copy the **Client ID** and generate a **Client Secret**.
@@ -139,19 +148,19 @@ In the worker's **Settings → Variables**, add:
 |---|---|
 | `GITHUB_CLIENT_ID` | from the OAuth app |
 | `GITHUB_CLIENT_SECRET` | from the OAuth app (encrypt it) |
-| `ALLOWED_DOMAINS` | `yourdomain.com` |
+| `ALLOWED_DOMAINS` | `joseviews.com` |
 
 Then in `public/admin/config.yml` set:
 
 ```yaml
 backend:
   name: github
-  repo: your-username/your-repo
+  repo: josesebastian445/joseviews
   branch: main
   base_url: https://sveltia-cms-auth.<subdomain>.workers.dev
 ```
 
-Commit, push, and `https://yourdomain.com/admin` will offer **Sign in with
+Commit, push, and `https://joseviews.com/admin` will offer **Sign in with
 GitHub**.
 
 ### Simpler alternative
@@ -178,7 +187,7 @@ Cloudflare Zaraz rather than a script tag, so it loads off the main thread.
 1. [Google Search Console](https://search.google.com/search-console) → add a
    **Domain** property.
 2. Verify with the DNS TXT record (Cloudflare DNS makes this a 30-second job).
-3. Submit `https://yourdomain.com/sitemap-index.xml`.
+3. Submit `https://joseviews.com/sitemap-index.xml`.
 4. Request indexing on the homepage to prompt the first crawl.
 
 Then leave it alone for a few weeks. Checking rankings daily is a good way to
